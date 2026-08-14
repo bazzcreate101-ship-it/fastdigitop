@@ -1,0 +1,12 @@
+<Files ".env">
+  Require all denied
+</Files>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteRule ^api(?:/.*)?$ api.php [QSA,L]
+  RewriteRule ^api-llm/?$ api-llm.html [L]
+  RewriteRule ^docs/?$ docs.html [L]
+  RewriteRule ^dashboard/?$ dashboard.html [L]
+</IfModule>
