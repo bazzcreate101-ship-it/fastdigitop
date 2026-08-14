@@ -57,6 +57,16 @@ const state = {
 };
 localStorage.setItem('fastdigitop_device_id', state.deviceId);
 
+document.addEventListener('error', (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLImageElement)) return;
+  const source = target.getAttribute('src') || '';
+  if (!source || source.includes('fastdigitop-mark.png') || source.includes('favicon.png')) return;
+  target.dataset.originalSrc = source;
+  target.src = source.includes('assets/') ? 'favicon.png' : 'assets/fastdigitop-mark.png';
+  target.alt = target.alt || 'FastDigiTop';
+}, true);
+
 function setChatId(chatId) {
   const next = String(chatId || '').trim();
   if (!next || next === state.chatId) return;
@@ -278,7 +288,7 @@ function detailModal(id) {
 }
 function authModal(mode = 'login') {
   const register = mode === 'register';
-  openModal(`${modalHead('Akun fastdigitop.com')}<div class="modal-body auth-modal-body"><div class="auth-hero"><div class="auth-hero-bg"></div><div class="auth-hero-content"><div class="auth-logo-mark"><i></i><b></b></div><h2>FastDigiTop</h2><p>Akun digital premium, harga terjangkau</p></div></div><div class="auth-form-section"><div class="auth-tabs"><button class="${register ? '' : 'active'}" data-auth-tab="login" type="button">Masuk</button><button class="${register ? 'active' : ''}" data-auth-tab="register" type="button">Daftar</button></div><form id="authForm" data-mode="${mode}">${register ? '<div class="form-group"><label>NAMA LENGKAP</label><div class="input-icon-wrap"><i data-lucide="user"></i><input name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="Nama kamu"></div></div>' : ''}<div class="form-group"><label>EMAIL</label><div class="input-icon-wrap"><i data-lucide="mail"></i><input name="email" type="email" required autocomplete="email" placeholder="nama@email.com"></div></div><div class="form-group"><label>PASSWORD</label><div class="input-icon-wrap"><i data-lucide="lock"></i><input name="password" type="password" minlength="8" required autocomplete="current-password" placeholder="Minimal 8 karakter"></div></div><button class="submit-button auth-submit" type="submit"><span>${register ? 'Buat akun gratis' : 'Masuk ke akun'}</span></button></form><div class="auth-divider"><span>atau</span></div><button class="google-auth-btn" id="googleAuthBtn" type="button"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Lanjutkan dengan Google</button><div id="googleAuthError" style="display:none;color:var(--error);font-size:0.85rem;margin-top:10px;justify-content:center;text-align:center"></div><p class="auth-footer-note">Akun tersimpan aman dan dapat dipakai di perangkat lain.</p></div></div>`);
+  openModal(`${modalHead('Akun fastdigitop.com')}<div class="modal-body auth-modal-body"><div class="auth-hero"><div class="auth-hero-bg"></div><div class="auth-hero-content"><img class="auth-logo-mark" src="assets/fastdigitop-mark.png" alt="FastDigiTop"><h2>FastDigiTop</h2><p>Akun digital premium, harga terjangkau</p></div></div><div class="auth-form-section"><div class="auth-tabs"><button class="${register ? '' : 'active'}" data-auth-tab="login" type="button">Masuk</button><button class="${register ? 'active' : ''}" data-auth-tab="register" type="button">Daftar</button></div><form id="authForm" data-mode="${mode}">${register ? '<div class="form-group"><label>NAMA LENGKAP</label><div class="input-icon-wrap"><i data-lucide="user"></i><input name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="Nama kamu"></div></div>' : ''}<div class="form-group"><label>EMAIL</label><div class="input-icon-wrap"><i data-lucide="mail"></i><input name="email" type="email" required autocomplete="email" placeholder="nama@email.com"></div></div><div class="form-group"><label>PASSWORD</label><div class="input-icon-wrap"><i data-lucide="lock"></i><input name="password" type="password" minlength="8" required autocomplete="current-password" placeholder="Minimal 8 karakter"></div></div><button class="submit-button auth-submit" type="submit"><span>${register ? 'Buat akun gratis' : 'Masuk ke akun'}</span></button></form><div class="auth-divider"><span>atau</span></div><button class="google-auth-btn" id="googleAuthBtn" type="button"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Lanjutkan dengan Google</button><div id="googleAuthError" style="display:none;color:var(--error);font-size:0.85rem;margin-top:10px;justify-content:center;text-align:center"></div><p class="auth-footer-note">Akun tersimpan aman dan dapat dipakai di perangkat lain.</p></div></div>`);
   document.querySelector('#googleAuthBtn')?.addEventListener('click', function () {
     const btn = this;
     const isRegisterMode = document.querySelector('[data-auth-tab="register"]')?.classList.contains('active');
@@ -677,7 +687,7 @@ function showPromoPopup() {
         </div>
         <div class="promo-card-content">
           <div class="promo-brand">
-            <span class="brand-symbol"><i></i><b></b></span>
+            <img class="promo-brand-mark" src="assets/fastdigitop-mark.png" alt="FastDigiTop">
             <span>FastDigiTop</span>
           </div>
           <div class="promo-header-row">
