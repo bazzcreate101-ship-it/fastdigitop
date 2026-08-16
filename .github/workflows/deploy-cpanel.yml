@@ -1,0 +1,84 @@
+name: Deploy FastDigiTop to cPanel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fastdigitop-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy PHP/static site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Lint PHP files
+        run: find . -type f -name "*.php" -print0 | xargs -0 -n1 php -l
+
+      - name: Setup SSH
+        env:
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
+          CPANEL_SSH_KEY: ${{ secrets.CPANEL_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$CPANEL_HOST"
+          test -n "$CPANEL_PORT"
+          test -n "$CPANEL_SSH_KEY"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$CPANEL_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          ssh-keyscan -p "$CPANEL_PORT" -H "$CPANEL_HOST" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Test SSH connection
+        env:
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_rsa \
+            -p "$CPANEL_PORT" \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "$CPANEL_USER@$CPANEL_HOST" \
+            "echo SSH connection OK"
+
+      - name: Deploy to production
+        env:
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_rsa \
+            -p "$CPANEL_PORT" \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "$CPANEL_USER@$CPANEL_HOST" <<'REMOTE_DEPLOY'
+          set -e
+          cd /home/fastdigi/public_html
+
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
+          REMOTE_DEPLOY
