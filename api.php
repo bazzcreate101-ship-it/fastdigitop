@@ -189,6 +189,7 @@ function admin_session_clear(): void { unset($_SESSION['admin_authenticated']); 
 function product_variant(array $product,string $variantId=''): array|null { foreach(($product['variants']??[]) as $variant) if((string)($variant['id']??'')===$variantId) return $variant; return $product['variants'][0]??null; }
 function product_base_price(array $product,string $variantId=''): int { $variant=product_variant($product,$variantId); return (int)($variant['price']??$product['price']??0); }
 function product_stock(array $product): int { return max(0,(int)($product['stock']??$product['available_stock']??0)); }
+function rupiah_text(int $amount): string { return 'Rp'.number_format(max(0,$amount),0,',','.'); }
 function set_product_stock(array &$product,int $stock): void { $product['stock']=max(0,$stock); $product['available_stock']=max(0,$stock); }
 function reserve_order_stock(array &$store,array $order): bool { foreach($order['items'] as $line){ $product=null; foreach($store['products'] as $p) if((int)($p['id']??0)===(int)($line['id']??0)){ $product=$p; break; } if(!$product || product_stock($product) < (int)$line['quantity']) return false; } foreach($order['items'] as $line) foreach($store['products'] as &$product) if((int)($product['id']??0)===(int)($line['id']??0)){ set_product_stock($product,product_stock($product)-(int)$line['quantity']); break; } return true; }
 function release_order_stock(array &$store,array $order): void { foreach($order['items'] as $line) foreach($store['products'] as &$product) if((int)($product['id']??0)===(int)($line['id']??0)){ set_product_stock($product,product_stock($product)+(int)$line['quantity']); break; } }
@@ -296,7 +297,6 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
   if($scope==='greeting') json_response(['answer'=>'Halo kak 👋 Fenita bisa bantu soal produk, harga, stok, pesanan, pembayaran, garansi, atau layanan WorkDigie.','escalate'=>false,'reason'=>'greeting'],200);
   if($scope!=='allowed') json_response(['answer'=>'Fenita hanya bisa bantu hal yang berkaitan dengan WorkDigie ya, kak—seperti produk, pesanan, pembayaran, garansi, atau kendala akun.','escalate'=>false,'reason'=>'out_of_scope'],200);
   if(!ai_daily_usage_allowed($user)) json_response(['answer'=>'Batas chat Fenita untuk hari ini sudah tercapai, kak. Kalau ada kendala penting, gunakan menu Lapor Masalah ya.','escalate'=>false,'reason'=>'daily_limit'],429);
-  $key=ai_provider_key(); if($key==='') json_response(['answer'=>'Fenita sedang belum tersambung ke layanan jawaban. Coba kirim lagi beberapa saat ya, kak.','escalate'=>false,'reason'=>'ai_not_configured'],503);
   $catalog=[]; $queryText=mb_strtolower($message);
   $needsFullCatalog=(bool)preg_match('/semua produk|daftar produk|produk apa|apa saja|yang tersedia|rekomendasi|termurah|termahal|bandingkan|perbandingan/iu',$queryText);
   foreach(array_values(array_filter($store['products'],fn($p)=>!empty($p['enabled']))) as $product){
@@ -309,6 +309,23 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
       $entry['variants']=[]; foreach(array_slice(is_array($product['variants']??null)?$product['variants']:[],0,6) as $variant)$entry['variants'][]=['label'=>$variant['label']??$variant['name']??'','price'=>(int)($variant['price']??0),'duration'=>$variant['duration']??'','warranty'=>$variant['warranty']??''];
     }
     $catalog[]=$entry;
+  }
+  $asksCatalog=(bool)preg_match('/harga|berapa|brp|price|biaya|stok|ready|tersedia|ada|habis|produk|paket/iu',$queryText);
+  if($asksCatalog){
+    $stop=['harga','berapa','brp','price','biaya','stok','ready','tersedia','ada','habis','produk','paket','akun','premium','bulan','garansi','private','yang','untuk','dong','kak'];
+    $tokens=array_values(array_filter(preg_split('/[^\pL\pN]+/u',$queryText)?:[],fn($w)=>mb_strlen($w)>=3&&!in_array($w,$stop,true)));
+    $matches=[];
+    foreach(array_values(array_filter($store['products'],fn($p)=>!empty($p['enabled']))) as $product){
+      $title=mb_strtolower((string)($product['title']??'')); $score=0;
+      foreach($tokens as $token){ if(str_contains($title,$token))$score+=2; if($token==='gpt'&&str_contains($title,'chatgpt'))$score+=3; if($token==='api'&&product_category($product)==='Developer API')$score+=2; }
+      if($score>0)$matches[]=['score'=>$score,'product'=>$product];
+    }
+    usort($matches,fn($a,$b)=>$b['score']<=>$a['score']);
+    if($matches){
+      $lines=[]; foreach(array_slice($matches,0,5) as $match){ $p=$match['product']; $stock=product_stock($p); $lines[]=($p['title']??'Produk').' '.rupiah_text(product_base_price($p)).' • stok '.$stock; }
+      $suffix=count($matches)>5?' Ada '.count($matches).' produk terkait, Fenita tampilkan yang paling dekat dulu ya.':'';
+      json_response(['answer'=>implode("\n",$lines).$suffix,'escalate'=>false,'reason'=>'local_catalog'],200);
+    }
   }
   $orderFacts=[];
   if($user){foreach(array_slice(array_values(array_filter($store['orders'],fn($order)=>($order['userId']??'')===($user['id']??''))),0,8) as $order)$orderFacts[]=['id'=>$order['id']??'','status'=>$order['status']??'','total'=>(int)($order['total']??0),'createdAt'=>$order['createdAt']??'','items'=>array_map(fn($line)=>['name'=>$line['title']??'','quantity'=>(int)($line['quantity']??1)],$order['items']??[])];}
@@ -333,6 +350,7 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
   $history=array_slice(is_array($b['history']??null)?$b['history']:[],-min(4,max(0,(int)env_value('AI_CHAT_CONTEXT_MESSAGES','4')))); $input=[]; foreach($history as $entry){ $role=($entry['role']??'user')==='assistant'?'assistant':'user'; $text=mb_substr(trim((string)($entry['content']??$entry['text']??'')),0,350); if($text!=='')$input[]=['role'=>$role,'content'=>$text]; } $input[]=['role'=>'user','content'=>$message];
   $messages=[['role'=>'system','content'=>$instructions."\nBalas sebagai JSON valid tanpa markdown: {\"action\":\"answer|escalate\",\"message\":\"...\",\"reason\":\"...\",\"order_id\":null}."]];
   foreach($input as $entry)$messages[]=$entry;
+  $key=ai_provider_key(); if($key==='') json_response(['answer'=>'Fenita sedang belum tersambung ke layanan jawaban. Coba kirim lagi beberapa saat ya, kak.','escalate'=>false,'reason'=>'ai_not_configured'],503);
   $maxTokens=min(180,max(60,(int)env_value('OPENAI_MAX_OUTPUT_TOKENS','160')));
   $payload=['model'=>ai_provider_model(),'messages'=>$messages,'temperature'=>0.25,'max_tokens'=>$maxTokens,'response_format'=>['type'=>'json_object']];
   $provider=ai_provider_post(ai_provider_base().'/chat/completions',$payload,$key);
