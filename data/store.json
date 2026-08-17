@@ -662,7 +662,7 @@
       "title": "PAKET TOKEN WORKDIGIE API LLM",
       "cashback_amount": 0,
       "cashback_type": "amount",
-      "thumbnail": "favicon.svg",
+      "thumbnail": "assets/workdigie-mark.png",
       "price": 28500,
       "available_stock": 999,
       "sold": 0,
@@ -1227,5 +1227,4 @@
     }
   ]
 }
-
 

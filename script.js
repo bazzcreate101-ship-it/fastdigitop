@@ -659,10 +659,15 @@ function updateCart() {
       return { ...line, quantity };
     })
     .filter((line) => line.quantity > 0);
-  document.querySelector("#cartCount").textContent = state.cart.reduce(
+  const cartCount = document.querySelector("#cartCount");
+  const cartTotalQuantity = state.cart.reduce(
     (total, line) => total + line.quantity,
     0,
   );
+  if (cartCount) {
+    cartCount.textContent = cartTotalQuantity;
+    cartCount.hidden = cartTotalQuantity === 0;
+  }
   const items = state.cart.map((line, index) => ({
     ...getProduct(line.id),
     ...line,
