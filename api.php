@@ -11,7 +11,7 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
 header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
 if(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off') header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
-const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=23;const ORDER_RESERVATION_MS=1800000;
+const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=24;const ORDER_RESERVATION_MS=1800000;
 define('RUNTIME_DATA_DIR',dirname(__DIR__).'/.workdigie-data');
 define('STORE_FILE',RUNTIME_DATA_DIR.'/store.json');
 define('STORE_BACKUP_FILE',RUNTIME_DATA_DIR.'/store.backup.json');
@@ -68,6 +68,7 @@ function ensure_store_defaults(array &$data): void {
   foreach($data['products'] as &$product){
     $price=(int)($product['price']??0);
     if(!array_key_exists('points_reward',$product)) $product['points_reward']=max(10,min(500,(int)floor($price/1000)*5));
+    if($schema<24 && (int)($product['id']??0)===93000) $product['thumbnail']='assets/workdigie-mark.png';
   }
   $defaults=[
     ['code'=>'WORKBARU10','description'=>'Diskon 10% untuk pelanggan baru','type'=>'percent','value'=>10,'minSubtotal'=>25000,'maxUses'=>0,'used'=>0,'enabled'=>true,'expiresAt'=>'','requiredCategory'=>'','minQuantity'=>1,'requireSameProduct'=>false],
