@@ -249,11 +249,14 @@ function ai_provider_post(string $url,array $payload,string $key): array {
   $raw=(string)curl_exec($ch); $error=(string)curl_error($ch); $status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE); curl_close($ch);
   return ['status'=>$status,'raw'=>$raw,'error'=>$error];
 }
-function ai_result_json(array $data): array|null {
+function ai_response_text(array $data): string {
   $text=$data['choices'][0]['message']['content']??'';
   if(is_array($text)){ $joined=''; foreach($text as $part) if(is_array($part))$joined.=(string)($part['text']??''); $text=$joined; }
   if($text==='') foreach($data['output']??[] as $output) foreach($output['content']??[] as $content) if(in_array($content['type']??'',['output_text','text'],true))$text.=(string)($content['text']??'');
-  $text=trim((string)$text); $text=preg_replace('/^```(?:json)?\s*|\s*```$/i','',$text);
+  return trim((string)$text);
+}
+function ai_result_json(array $data): array|null {
+  $text=ai_response_text($data); $text=preg_replace('/^```(?:json)?\s*|\s*```$/i','',$text);
   $decoded=json_decode($text,true); return is_array($decoded)?$decoded:null;
 }
 $path = read_path(); $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -330,11 +333,15 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
   $history=array_slice(is_array($b['history']??null)?$b['history']:[],-min(4,max(0,(int)env_value('AI_CHAT_CONTEXT_MESSAGES','4')))); $input=[]; foreach($history as $entry){ $role=($entry['role']??'user')==='assistant'?'assistant':'user'; $text=mb_substr(trim((string)($entry['content']??$entry['text']??'')),0,350); if($text!=='')$input[]=['role'=>$role,'content'=>$text]; } $input[]=['role'=>'user','content'=>$message];
   $messages=[['role'=>'system','content'=>$instructions."\nBalas sebagai JSON valid tanpa markdown: {\"action\":\"answer|escalate\",\"message\":\"...\",\"reason\":\"...\",\"order_id\":null}."]];
   foreach($input as $entry)$messages[]=$entry;
-  $payload=['model'=>ai_provider_model(),'messages'=>$messages,'temperature'=>0.25,'max_tokens'=>min(180,max(60,(int)env_value('OPENAI_MAX_OUTPUT_TOKENS','160'))),'response_format'=>['type'=>'json_object']];
+  $maxTokens=min(180,max(60,(int)env_value('OPENAI_MAX_OUTPUT_TOKENS','160')));
+  $payload=['model'=>ai_provider_model(),'messages'=>$messages,'temperature'=>0.25,'max_tokens'=>$maxTokens,'response_format'=>['type'=>'json_object']];
   $provider=ai_provider_post(ai_provider_base().'/chat/completions',$payload,$key);
-  if($provider['status']===400){ unset($payload['response_format']); $provider=ai_provider_post(ai_provider_base().'/chat/completions',$payload,$key); }
+  if($provider['status']<200||$provider['status']>=300||$provider['raw']===''){ unset($payload['response_format']); $provider=ai_provider_post(ai_provider_base().'/chat/completions',$payload,$key); }
+  if($provider['status']<200||$provider['status']>=300||$provider['raw']===''){ $provider=ai_provider_post(ai_provider_base().'/chat/completions',['model'=>ai_provider_model(),'messages'=>$messages,'max_tokens'=>$maxTokens],$key); }
+  if($provider['status']<200||$provider['status']>=300||$provider['raw']===''){ $provider=ai_provider_post(ai_provider_base().'/chat/completions',['model'=>ai_provider_model(),'messages'=>$messages,'max_completion_tokens'=>$maxTokens],$key); }
   if($provider['status']<200||$provider['status']>=300||$provider['raw']===''){ error_log('WorkDigie AI provider error HTTP '.$provider['status'].' '.$provider['error'].' '.mb_substr($provider['raw'],0,300)); json_response(['answer'=>'Asisten sedang agak lambat merespons. Coba kirim ulang pertanyaannya beberapa saat lagi ya, kak.','escalate'=>false,'reason'=>'provider_error'],502); }
   $data=json_decode($provider['raw'],true); $result=is_array($data)?ai_result_json($data):null;
+  if((!is_array($result)||!in_array($result['action']??'', ['answer','escalate'],true))&&is_array($data)){ $plain=mb_substr(trim(preg_replace('/^```(?:json)?\s*|\s*```$/i','',ai_response_text($data))),0,650); if($plain!=='')$result=['action'=>'answer','message'=>$plain,'reason'=>'plain_text']; }
   if(!is_array($result)||!in_array($result['action']??'', ['answer','escalate'],true)) json_response(['answer'=>'Jawabannya belum terbentuk dengan benar. Boleh kirim ulang pertanyaannya, kak?','escalate'=>false,'reason'=>'invalid_ai_output'],502);
   $answer=mb_substr(trim((string)($result['message']??'')),0,650);
   if($answer===''||preg_match('/```|<script|system prompt|developer message/i',$answer)) json_response(['answer'=>'Fenita hanya bisa bantu informasi dan kendala seputar WorkDigie ya, kak.','escalate'=>false,'reason'=>'unsafe_output'],200);
