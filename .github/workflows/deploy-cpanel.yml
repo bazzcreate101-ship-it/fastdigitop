@@ -1,4 +1,4 @@
-name: Deploy FastDigiTop to cPanel
+name: Deploy FastDigiTop via FTP
 
 on:
   push:
@@ -17,6 +17,7 @@ jobs:
   deploy:
     name: Deploy PHP/static site
     runs-on: ubuntu-latest
+    environment: FTP_SERVER
 
     steps:
       - name: Checkout repository
@@ -30,55 +31,34 @@ jobs:
       - name: Lint PHP files
         run: find . -type f -name "*.php" -print0 | xargs -0 -n1 php -l
 
-      - name: Setup SSH
+      - name: Validate FTP secrets
         env:
-          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
-          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
-          CPANEL_SSH_KEY: ${{ secrets.CPANEL_SSH_KEY }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
         run: |
           set -euo pipefail
-          test -n "$CPANEL_HOST"
-          test -n "$CPANEL_PORT"
-          test -n "$CPANEL_SSH_KEY"
+          test -n "$FTP_SERVER"
+          test -n "$FTP_USERNAME"
+          test -n "$FTP_PASSWORD"
+          test -n "$FTP_SERVER_DIR"
 
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "$CPANEL_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          ssh-keyscan -p "$CPANEL_PORT" -H "$CPANEL_HOST" >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-
-      - name: Test SSH connection
-        env:
-          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
-          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
-          CPANEL_USER: ${{ secrets.CPANEL_USER }}
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/id_rsa \
-            -p "$CPANEL_PORT" \
-            -o BatchMode=yes \
-            -o StrictHostKeyChecking=yes \
-            "$CPANEL_USER@$CPANEL_HOST" \
-            "echo SSH connection OK"
-
-      - name: Deploy to production
-        env:
-          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
-          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
-          CPANEL_USER: ${{ secrets.CPANEL_USER }}
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/id_rsa \
-            -p "$CPANEL_PORT" \
-            -o BatchMode=yes \
-            -o StrictHostKeyChecking=yes \
-            "$CPANEL_USER@$CPANEL_HOST" <<'REMOTE_DEPLOY'
-          set -e
-          cd /home/fastdigi/public_html
-
-          git fetch origin main
-          git checkout main
-          git pull --ff-only origin main
-          REMOTE_DEPLOY
+      - name: Deploy to production via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            **/node_modules/**
+            .env
+            .user.ini
+            php.ini
+            **/.DS_Store
