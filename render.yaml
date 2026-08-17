@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: WorkDigie
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: ADMIN_PASSWORD
+        sync: false
+

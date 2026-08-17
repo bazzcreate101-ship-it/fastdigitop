@@ -1,12 +1,10 @@
-<Files ".env">
-  Require all denied
-</Files>
+DirectoryIndex index.php index.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  RewriteRule ^api(?:/.*)?$ api.php [QSA,L]
-  RewriteRule ^api-llm/?$ api-llm.html [L]
-  RewriteRule ^docs/?$ docs.html [L]
-  RewriteRule ^dashboard/?$ dashboard.html [L]
+  RewriteRule ^api(?:/.*)?$ public/api.php [QSA,L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

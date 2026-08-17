@@ -40,7 +40,7 @@
 .admin-modal{width:min(560px,100%);max-height:92dvh;overflow:auto}
 .admin-modal-shell{background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 24px 60px rgba(16,29,27,.2);overflow:hidden}
 .admin-modal-head{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-.admin-modal-head small{display:block;font-size:9px;font-weight:800;color:#2563ff;letter-spacing:.8px}
+.admin-modal-head small{display:block;font-size:9px;font-weight:800;color:#0f8d78;letter-spacing:.8px}
 .admin-modal-head h2{font-size:16px;margin-top:3px}
 .admin-modal-desc{margin-top:6px;font-size:10px;line-height:1.5;color:var(--muted)}
 .admin-modal-close{width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:6px;display:grid;place-items:center;flex:none}

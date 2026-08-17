@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dokumentasi API | FastDigiTop LLM</title>
-  <link rel="icon" href="favicon.png" type="image/png">
+  <title>Dokumentasi API | WorkDigie LLM</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #060e0d;
       --surface: #0c1a18;
       --surface2: #122320;
-      --border: rgba(20,241,149,.18);
+      --border: rgba(16,185,129,.18);
       --border2: rgba(255,255,255,.07);
-      --green: #14f195;
+      --green: #10b981;
       --green-dim: #0a7a62;
       --text: #e8f5f1;
       --text-dim: #7fa89e;
@@ -49,7 +49,10 @@
       z-index: 10;
     }
     .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-    .brand-mark{width:34px;height:34px;border-radius:9px;object-fit:cover;display:block;flex:none;box-shadow:0 8px 20px rgba(37,99,255,.22)}
+    .brand-symbol{position:relative;width:34px;height:34px;background:#17211f;border-radius:7px;display:block;overflow:hidden;transform:rotate(-4deg)}
+    .brand-symbol i,.brand-symbol b{position:absolute;border:4px solid white;border-left:0}
+    .brand-symbol i{width:15px;height:21px;left:6px;top:6px;border-radius:0 12px 12px 0}
+    .brand-symbol b{width:10px;height:14px;left:17px;top:10px;border-color:#f5755c;border-radius:0 9px 9px 0}
     .brand span { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
     .brand span b { color: var(--green); font-weight: 800; }
     .header-links a { color: var(--text-dim); font-size: 14px; font-weight: 600; text-decoration: none; transition: .2s; }
@@ -85,7 +88,7 @@
       cursor: pointer;
     }
     .nav-link:hover { background: var(--surface2); color: var(--text); text-decoration: none; }
-    .nav-link.active { background: rgba(20,241,149,.1); color: var(--green); font-weight: 600; }
+    .nav-link.active { background: rgba(16,185,129,.1); color: var(--green); font-weight: 600; }
     
     /* Main Content */
     .main-content {
@@ -139,7 +142,7 @@
     .endpoint { display: inline-flex; align-items: center; gap: 12px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 8px 16px; margin-bottom: 24px; width: 100%; }
     .method { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; padding: 4px 8px; border-radius: 4px; }
     .method.get { background: rgba(59,130,246,.15); color: #60a5fa; }
-    .method.post { background: rgba(20,241,149,.15); color: #34d399; }
+    .method.post { background: rgba(16,185,129,.15); color: #34d399; }
     .method.delete { background: rgba(248,113,113,.15); color: #f87171; }
     .path { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); }
 
@@ -167,8 +170,8 @@
 
 <header>
   <a href="/api-llm.html" class="brand">
-    <img class="brand-mark" src="assets/fastdigitop-mark.png" alt="FastDigiTop">
-    <span>fastdigitop<b>llm</b> Docs</span>
+    <span class="brand-symbol" style="transform:scale(0.8)"><i></i><b></b></span>
+    <span>workdigie<b>llm</b> Docs</span>
   </a>
   <div class="header-links">
     <a href="/api-llm.html">← Kembali ke Landing</a>
@@ -200,12 +203,12 @@
       <!-- PENGENALAN -->
       <div class="section active" id="pengenalan">
         <h1>Pengenalan</h1>
-        <p>Selamat datang di dokumentasi resmi <strong>FastDigiTop LLM API</strong>. API ini dirancang untuk memberikan Anda akses instan ke 100+ model AI (seperti GPT-4o, Claude 3.5, Gemini 1.5, DeepSeek, dll) melalui <strong>satu endpoint tunggal</strong> yang 100% kompatibel dengan format <code>OpenAI API</code>.</p>
-        <p>Anda tidak perlu mengubah kode (jika sudah menggunakan OpenAI SDK), cukup ganti <strong>Base URL</strong> dan <strong>API Key</strong> Anda dengan kredensial dari FastDigiTop LLM.</p>
+        <p>Selamat datang di dokumentasi resmi <strong>WorkDigie LLM API</strong>. API ini dirancang untuk memberikan Anda akses instan ke 100+ model AI (seperti GPT-4o, Claude 3.5, Gemini 1.5, DeepSeek, dll) melalui <strong>satu endpoint tunggal</strong> yang 100% kompatibel dengan format <code>OpenAI API</code>.</p>
+        <p>Anda tidak perlu mengubah kode (jika sudah menggunakan OpenAI SDK), cukup ganti <strong>Base URL</strong> dan <strong>API Key</strong> Anda dengan kredensial dari WorkDigie LLM.</p>
         <div class="alert alert-info">
           <div>
             <strong>Info Sistem</strong><br>
-            FastDigiTop LLM menggunakan model pay-as-you-go. Saldo Anda dipotong sesuai pemakaian token per request. Tidak ada masa kadaluarsa (expired) untuk saldo.
+            WorkDigie LLM menggunakan model pay-as-you-go. Saldo Anda dipotong sesuai pemakaian token per request. Tidak ada masa kadaluarsa (expired) untuk saldo.
           </div>
         </div>
       </div>
@@ -214,11 +217,11 @@
       <div class="section" id="akun-key">
         <h1>Pembuatan Akun & API Key</h1>
         <h2>Langkah 1: Membeli Saldo API</h2>
-        <p>Pembelian saldo dilakukan langsung melalui platform <a href="/">FastDigiTop Store</a>. Pilih kategori <strong>API LLM</strong>, lalu pilih paket saldo yang Anda butuhkan (mulai dari $5).</p>
+        <p>Pembelian saldo dilakukan langsung melalui platform <a href="/">WorkDigie Store</a>. Pilih kategori <strong>API LLM</strong>, lalu pilih paket saldo yang Anda butuhkan (mulai dari $5).</p>
         <p>Kurs yang berlaku adalah tetap: <strong>$1 USD = Rp 12.300</strong>.</p>
         
         <h2>Langkah 2: Proses Aktivasi</h2>
-        <p>Setelah melakukan pembayaran via QRIS/e-Wallet di FastDigiTop Store, admin kami akan memvalidasi pesanan Anda dan mengaktifkan akun Anda secara manual demi keamanan.</p>
+        <p>Setelah melakukan pembayaran via QRIS/e-Wallet di WorkDigie Store, admin kami akan memvalidasi pesanan Anda dan mengaktifkan akun Anda secara manual demi keamanan.</p>
         
         <h2>Langkah 3: Menerima API Key</h2>
         <p>Anda akan menerima <strong>API Key</strong> yang diawali dengan <code>sk-dpe-...</code> beserta informasi login dashboard (jika diperlukan) melalui WhatsApp atau email yang terdaftar saat checkout. Simpan API Key ini baik-baik dan jangan pernah membagikannya secara publik.</p>
@@ -227,10 +230,10 @@
       <!-- API REFERENCE -->
       <div class="section" id="api-ref">
         <h1>API Reference</h1>
-        <p>FastDigiTop LLM bertindak sebagai proxy server standar yang mengutamakan kompatibilitas dengan ekosistem OpenAI.</p>
+        <p>WorkDigie LLM bertindak sebagai proxy server standar yang mengutamakan kompatibilitas dengan ekosistem OpenAI.</p>
         
         <h3>Base URL</h3>
-        <pre>https://api.fastdigitop.com/v1</pre>
+        <pre>https://api.workdigie.com/v1</pre>
 
         <h3>Autentikasi</h3>
         <p>Gunakan API Key yang diberikan admin di header <code>Authorization</code>.</p>
@@ -247,7 +250,7 @@
         </div>
 
         <h3>Contoh Request (cURL)</h3>
-        <pre>curl https://api.fastdigitop.com/v1/chat/completions \
+        <pre>curl https://api.workdigie.com/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-dpe-YOUR_API_KEY" \
   -d '{
@@ -278,7 +281,7 @@
           <span class="method post">POST</span>
           <span class="path">/embeddings</span>
         </div>
-        <pre>curl https://api.fastdigitop.com/v1/embeddings \
+        <pre>curl https://api.workdigie.com/v1/embeddings \
   -H "Authorization: Bearer sk-dpe-YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -294,7 +297,7 @@
           <span class="method get">GET</span>
           <span class="path">/models</span>
         </div>
-        <pre>curl https://api.fastdigitop.com/v1/models \
+        <pre>curl https://api.workdigie.com/v1/models \
   -H "Authorization: Bearer sk-dpe-YOUR_API_KEY"</pre>
       </div>
 
@@ -308,7 +311,7 @@
           <span class="method post">POST</span>
           <span class="path">/images/generations</span>
         </div>
-        <pre>curl https://api.fastdigitop.com/v1/images/generations \
+        <pre>curl https://api.workdigie.com/v1/images/generations \
   -H "Authorization: Bearer sk-dpe-YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -333,13 +336,13 @@
         <h1>Contoh Integrasi Pihak Ketiga</h1>
         
         <h2>Python (OpenAI SDK)</h2>
-        <p>FastDigiTop LLM dapat digunakan secara <i>drop-in</i> dengan <i>library</i> resmi OpenAI untuk Python.</p>
+        <p>WorkDigie LLM dapat digunakan secara <i>drop-in</i> dengan <i>library</i> resmi OpenAI untuk Python.</p>
         <pre>pip install openai</pre>
         <pre>from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-dpe-YOUR_API_KEY",
-    base_url="https://api.fastdigitop.com/v1"
+    base_url="https://api.workdigie.com/v1"
 )
 
 response = client.chat.completions.create(
@@ -353,7 +356,7 @@ print(response.choices[0].message.content)</pre>
         <p>Anda dapat mengonfigurasi AI assistant seperti Cline atau Cursor di text editor Anda.</p>
         <ul>
           <li>Pilih provider API: <strong>OpenAI Compatible</strong></li>
-          <li>Base URL: <code>https://api.fastdigitop.com/v1</code></li>
+          <li>Base URL: <code>https://api.workdigie.com/v1</code></li>
           <li>API Key: <code>sk-dpe-YOUR_API_KEY</code></li>
           <li>Model override: Ketik nama model misalnya <code>anthropic/claude-3-5-sonnet</code></li>
         </ul>

@@ -498,7 +498,7 @@
       "featuredRank": 99,
       "warranty": "30 hari",
       "access": "Akun resmi privat",
-      "description": "Akun resmi dan bukan akun ilegal. Akses bersifat privat, bukan sharing, dengan garansi 30 hari sesuai ketentuan penggunaan FastDigiTop.",
+      "description": "Akun resmi dan bukan akun ilegal. Akses bersifat privat, bukan sharing, dengan garansi 30 hari sesuai ketentuan penggunaan WorkDigie.",
       "autoRestock": false
     },
     {
@@ -519,7 +519,7 @@
       "duration": "1 bulan",
       "warranty": "Garansi akses",
       "access": "Dola AI",
-      "description": "Dola AI adalah asisten chat AI untuk percakapan, menulis, menerjemahkan, coding, mencari inspirasi, dan membahas berbagai topik. Produk aktif 1 bulan sesuai ketentuan penggunaan FastDigiTop.",
+      "description": "Dola AI adalah asisten chat AI untuk percakapan, menulis, menerjemahkan, coding, mencari inspirasi, dan membahas berbagai topik. Produk aktif 1 bulan sesuai ketentuan penggunaan WorkDigie.",
       "autoRestock": false
     },
     {
@@ -676,10 +676,10 @@
     {
       "id": 93000,
       "is_best_seller": false,
-      "title": "SALDO API FastDigiTop LLM",
+      "title": "SALDO API WorkDigie LLM",
       "cashback_amount": 0,
       "cashback_type": "amount",
-      "thumbnail": "favicon.png",
+      "thumbnail": "favicon.svg",
       "price": 12300,
       "available_stock": 999,
       "sold": 0,
@@ -690,8 +690,8 @@
       "featuredRank": 2,
       "duration": "Pay-as-you-go",
       "warranty": "Garansi saldo masuk",
-      "access": "API Key FastDigiTop LLM",
-      "description": "Top-up saldo API FastDigiTop LLM untuk mengakses 100+ model AI (GPT-4o, Claude, Gemini, DeepSeek, dll) melalui endpoint yang kompatibel OpenAI. Kurs tetap Rp12.300/. Akun dan API Key akan dibuatkan oleh admin setelah pembayaran dikonfirmasi.",
+      "access": "API Key WorkDigie LLM",
+      "description": "Top-up saldo API WorkDigie LLM untuk mengakses 100+ model AI (GPT-4o, Claude, Gemini, DeepSeek, dll) melalui endpoint yang kompatibel OpenAI. Kurs tetap Rp12.300/. Akun dan API Key akan dibuatkan oleh admin setelah pembayaran dikonfirmasi.",
       "variants": [
         {
           "id": "5usd",
@@ -1231,7 +1231,7 @@
   "userSessions": [],
   "settings": {
     "maintenance": false,
-    "maintenanceMessage": "FastDigiTop sedang melakukan pemeliharaan singkat. Silakan kembali beberapa saat lagi.",
+    "maintenanceMessage": "WorkDigie sedang melakukan pemeliharaan singkat. Silakan kembali beberapa saat lagi.",
     "reviewsEnabled": true
   },
   "vouchers": [

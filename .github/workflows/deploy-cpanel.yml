@@ -1,4 +1,4 @@
-name: Deploy FastDigiTop via FTP
+name: Deploy WorkDigie via FTP
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: fastdigitop-production
+  group: workdigie-production
   cancel-in-progress: true
 
 jobs:

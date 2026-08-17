@@ -19,7 +19,8 @@
       "warranty": "30 hari",
       "access": "Akun resmi Claude Pro di claude.ai",
       "description": "Akun resmi Claude Pro login di claude.ai. Akun Vietnam dengan pembayaran credit card Vietnam, garansi 30 hari, dan dijamin aman dari deactive selama tidak mengubah pembayaran, info login seperti email dan password, serta tidak terlalu sering ganti device.",
-      "duration": "1 bulan"
+      "duration": "1 bulan",
+      "autoRestock": false
     },
     {
       "id": 43262,
@@ -35,7 +36,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 40213,
@@ -51,7 +53,8 @@
       "has_wholesale": false,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 40212,
@@ -67,7 +70,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 40138,
@@ -83,7 +87,8 @@
       "has_wholesale": true,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 35843,
@@ -99,7 +104,8 @@
       "has_wholesale": false,
       "stock": 10,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 31661,
@@ -115,7 +121,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 31181,
@@ -131,7 +138,8 @@
       "has_wholesale": true,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 30420,
@@ -147,7 +155,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 25754,
@@ -163,7 +172,8 @@
       "has_wholesale": true,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 24508,
@@ -179,7 +189,8 @@
       "has_wholesale": true,
       "stock": 49,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23946,
@@ -195,7 +206,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23945,
@@ -211,7 +223,8 @@
       "has_wholesale": false,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23944,
@@ -227,7 +240,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23943,
@@ -243,7 +257,8 @@
       "has_wholesale": false,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23942,
@@ -259,7 +274,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23940,
@@ -275,7 +291,8 @@
       "has_wholesale": false,
       "stock": 5,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23939,
@@ -291,7 +308,8 @@
       "has_wholesale": false,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23938,
@@ -307,7 +325,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23935,
@@ -323,7 +342,8 @@
       "has_wholesale": true,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23933,
@@ -339,7 +359,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23932,
@@ -355,7 +376,8 @@
       "has_wholesale": true,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23931,
@@ -371,7 +393,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23930,
@@ -387,7 +410,8 @@
       "has_wholesale": true,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23928,
@@ -403,7 +427,8 @@
       "has_wholesale": true,
       "stock": 11,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23927,
@@ -419,7 +444,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23926,
@@ -435,7 +461,8 @@
       "has_wholesale": false,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23924,
@@ -451,7 +478,8 @@
       "has_wholesale": false,
       "stock": 12,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23915,
@@ -470,7 +498,8 @@
       "featuredRank": 99,
       "warranty": "30 hari",
       "access": "Akun resmi privat",
-      "description": "Akun resmi dan bukan akun ilegal. Akses bersifat privat, bukan sharing, dengan garansi 30 hari sesuai ketentuan penggunaan FastDigiTop."
+      "description": "Akun resmi dan bukan akun ilegal. Akses bersifat privat, bukan sharing, dengan garansi 30 hari sesuai ketentuan penggunaan WorkDigie.",
+      "autoRestock": false
     },
     {
       "id": 91001,
@@ -490,7 +519,8 @@
       "duration": "1 bulan",
       "warranty": "Garansi akses",
       "access": "Dola AI",
-      "description": "Dola AI adalah asisten chat AI untuk percakapan, menulis, menerjemahkan, coding, mencari inspirasi, dan membahas berbagai topik. Produk aktif 1 bulan sesuai ketentuan penggunaan FastDigiTop."
+      "description": "Dola AI adalah asisten chat AI untuk percakapan, menulis, menerjemahkan, coding, mencari inspirasi, dan membahas berbagai topik. Produk aktif 1 bulan sesuai ketentuan penggunaan WorkDigie.",
+      "autoRestock": false
     },
     {
       "id": 92000,
@@ -547,7 +577,8 @@
       "duration": "3 bulan",
       "warranty": "Garansi penuh",
       "access": "ChatGPT Go",
-      "description": "Akses ChatGPT Go selama 3 bulan untuk chat AI, menulis, belajar, merangkum, dan membantu pekerjaan harian. Produk mendapat garansi penuh selama masa aktif dengan mengikuti ketentuan penggunaan."
+      "description": "Akses ChatGPT Go selama 3 bulan untuk chat AI, menulis, belajar, merangkum, dan membantu pekerjaan harian. Produk mendapat garansi penuh selama masa aktif dengan mengikuti ketentuan penggunaan.",
+      "autoRestock": false
     },
     {
       "id": 90001,
@@ -567,7 +598,8 @@
       "duration": "1 bulan",
       "warranty": "2 hari",
       "access": "Akun privat + Codex",
-      "description": "Akun ChatGPT Plus privat, bukan sharing, dengan dukungan Codex. Aktivasi menggunakan payment credit card pada akun privat agar akses lebih aman dan tidak bercampur dengan pengguna lain. Tersedia opsi aktivasi memakai Gmail sendiri dengan tambahan Rp5.000."
+      "description": "Akun ChatGPT Plus privat, bukan sharing, dengan dukungan Codex. Aktivasi menggunakan payment credit card pada akun privat agar akses lebih aman dan tidak bercampur dengan pengguna lain. Tersedia opsi aktivasi memakai Gmail sendiri dengan tambahan Rp5.000.",
+      "autoRestock": false
     },
     {
       "id": 90002,
@@ -587,7 +619,8 @@
       "duration": "1 bulan",
       "warranty": "20 hari",
       "access": "Akun privat + Codex",
-      "description": "Akun ChatGPT Plus privat, bukan sharing, dengan dukungan Codex. Aktivasi menggunakan payment credit card pada akun privat agar akses lebih aman dan tidak bercampur dengan pengguna lain. Tersedia opsi aktivasi memakai Gmail sendiri dengan tambahan Rp5.000."
+      "description": "Akun ChatGPT Plus privat, bukan sharing, dengan dukungan Codex. Aktivasi menggunakan payment credit card pada akun privat agar akses lebih aman dan tidak bercampur dengan pengguna lain. Tersedia opsi aktivasi memakai Gmail sendiri dengan tambahan Rp5.000.",
+      "autoRestock": false
     },
     {
       "id": 23818,
@@ -603,7 +636,8 @@
       "has_wholesale": true,
       "stock": 49,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23725,
@@ -619,7 +653,8 @@
       "has_wholesale": true,
       "stock": 48,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 23580,
@@ -635,15 +670,16 @@
       "has_wholesale": true,
       "stock": 8,
       "enabled": true,
-      "featuredRank": 99
+      "featuredRank": 99,
+      "autoRestock": false
     },
     {
       "id": 93000,
       "is_best_seller": false,
-      "title": "SALDO API FastDigiTop LLM",
+      "title": "SALDO API WorkDigie LLM",
       "cashback_amount": 0,
       "cashback_type": "amount",
-      "thumbnail": "favicon.png",
+      "thumbnail": "favicon.svg",
       "price": 12300,
       "available_stock": 999,
       "sold": 0,
@@ -654,8 +690,46 @@
       "featuredRank": 2,
       "duration": "Pay-as-you-go",
       "warranty": "Garansi saldo masuk",
-      "access": "API Key FastDigiTop LLM",
-      "description": "Top-up saldo API FastDigiTop LLM untuk mengakses 100+ model AI (GPT-4o, Claude, Gemini, DeepSeek, dll) melalui endpoint yang kompatibel OpenAI. Kurs tetap Rp12.300/. Akun dan API Key akan dibuatkan oleh admin setelah pembayaran dikonfirmasi."
+      "access": "API Key WorkDigie LLM",
+      "description": "Top-up saldo API WorkDigie LLM untuk mengakses 100+ model AI (GPT-4o, Claude, Gemini, DeepSeek, dll) melalui endpoint yang kompatibel OpenAI. Kurs tetap Rp12.300/. Akun dan API Key akan dibuatkan oleh admin setelah pembayaran dikonfirmasi.",
+      "variants": [
+        {
+          "id": "5usd",
+          "label": "Saldo $5 USD",
+          "price": 61500,
+          "duration": "Pay-as-you-go",
+          "warranty": "Garansi saldo masuk"
+        },
+        {
+          "id": "10usd",
+          "label": "Saldo $10 USD",
+          "price": 123000,
+          "duration": "Pay-as-you-go",
+          "warranty": "Garansi saldo masuk"
+        },
+        {
+          "id": "25usd",
+          "label": "Saldo $25 USD",
+          "price": 307500,
+          "duration": "Pay-as-you-go",
+          "warranty": "Garansi saldo masuk"
+        },
+        {
+          "id": "50usd",
+          "label": "Saldo $50 USD",
+          "price": 615000,
+          "duration": "Pay-as-you-go",
+          "warranty": "Garansi saldo masuk"
+        },
+        {
+          "id": "100usd",
+          "label": "Saldo $100 USD",
+          "price": 1230000,
+          "duration": "Pay-as-you-go",
+          "warranty": "Garansi saldo masuk"
+        }
+      ],
+      "autoRestock": false
     }
   ],
   "orders": [],
@@ -1140,28 +1214,26 @@
       "rating": 4,
       "comment": "Canva Pro aktif. Instruksi awal bisa dibuat lebih singkat, tapi produknya oke.",
       "createdAt": "2026-06-04T09:55:00.000Z"
-    },
-    {
-      "id": 92000,
-      "is_best_seller": true,
-      "title": "GPT EDU K12",
-      "cashback_amount": 0,
-      "cashback_type": "amount",
-      "thumbnail": "https://cdn.example.com/gpt-edu-k12.png",
-      "price": 360000,
-      "available_stock": 8,
-      "sold": 0,
-      "total_stock": 8,
-      "has_wholesale": false,
-      "stock": 8,
-      "enabled": true,
-      "featuredRank": 1,
-      "duration": "1 tahun",
-      "warranty": "3 bulan",
-      "access": "GPT Edu K12 + Codex",
-      "description": "Akses GPT Edu K12 untuk kebutuhan belajar, membuat materi, merangkum, menulis, riset ringan, pendampingan tugas sekolah, dan penggunaan Codex untuk belajar coding. Produk tidak menyediakan opsi email sendiri; detail akses dan panduan penggunaan dikirim admin setelah pembayaran."
     }
   ],
+  "users": [
+    {
+      "id": "usr-46ed030506bd2ad60a2fbe07",
+      "name": "Test User",
+      "email": "testuser@gmail.com",
+      "salt": "5eb1952da5ae450366e5a15f3e0f62aa",
+      "passwordHash": "b551bebf9c3d9eb0f437260796ee8ae74e0fc10ed625b6714ac35d2c69d6c1fb",
+      "deviceId": "2531353d-eb4c-40a4-9eb8-00cbb930c425",
+      "blocked": false,
+      "createdAt": "2026-07-17T13:09:51.472Z"
+    }
+  ],
+  "userSessions": [],
+  "settings": {
+    "maintenance": false,
+    "maintenanceMessage": "WorkDigie sedang melakukan pemeliharaan singkat. Silakan kembali beberapa saat lagi.",
+    "reviewsEnabled": true
+  },
   "vouchers": [
     {
       "code": "SPESIALAI07",
@@ -1175,7 +1247,7 @@
       "requiredCategory": "AI & produktivitas",
       "minQuantity": 2,
       "requireSameProduct": true,
-      "createdAt": "2026-07-17T13:30:51.580Z"
+      "createdAt": "2026-07-17T13:30:51.565Z"
     }
   ]
 }

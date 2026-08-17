@@ -259,7 +259,7 @@ function llmUserTable() {
     <div class="llm-top-bar">
       <div>
         <h2>LLM Users <span class="llm-count">${users.length}</span></h2>
-        <p class="llm-subtitle">Kelola akun API LLM FastDigiTop</p>
+        <p class="llm-subtitle">Kelola akun API LLM WorkDigie</p>
       </div>
       <button class="llm-add-btn" id="llmAddToggle"><i data-lucide="plus"></i> Tambah Akun</button>
     </div>
