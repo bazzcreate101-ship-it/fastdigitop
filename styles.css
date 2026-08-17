@@ -1324,3 +1324,590 @@ body.route-support{overflow:hidden}.modal-layer.support-page-layer{inset:64px 0 
   .login-button.logged-in span{display:none!important}
   .product-page{width:calc(100% - 20px)!important}
 }
+
+/* ===== WorkDigie final responsive audit ===== */
+@media(min-width:761px){
+  .reference-header{
+    height:72px!important;
+  }
+  .reference-nav{
+    height:72px!important;
+  }
+  .reference-actions{
+    gap:8px!important;
+  }
+  .theme-button,.compact-cart{
+    width:40px!important;
+    height:40px!important;
+    min-width:40px!important;
+    min-height:40px!important;
+    border-radius:14px!important;
+  }
+  .login-button{
+    height:40px!important;
+    min-width:118px!important;
+    max-width:150px!important;
+    border-radius:14px!important;
+    background:var(--wd-orange)!important;
+    box-shadow:0 12px 28px rgba(248,93,27,.18)!important;
+  }
+  .login-button.logged-in{
+    min-width:132px!important;
+    max-width:150px!important;
+    padding:0 13px 0 8px!important;
+  }
+  .compact-cart{
+    margin-left:4px!important;
+  }
+  .chat-panel{
+    right:20px!important;
+    bottom:18px!important;
+    width:min(392px,calc(100vw - 32px))!important;
+    height:min(520px,calc(100dvh - 96px))!important;
+    max-height:520px!important;
+    border-radius:20px!important;
+  }
+  .chat-head{
+    height:68px!important;
+  }
+  .chat-form{
+    min-height:66px!important;
+  }
+}
+
+@media(max-width:900px){
+  html{
+    overflow-x:hidden!important;
+  }
+  body{
+    overflow-x:clip!important;
+    overflow-y:visible!important;
+  }
+  .reference-header{
+    height:64px!important;
+  }
+  .reference-nav{
+    width:calc(100% - 24px)!important;
+    height:64px!important;
+    gap:8px!important;
+  }
+  .reference-nav nav{
+    display:none!important;
+  }
+  .jp-brand{
+    min-width:0!important;
+    width:auto!important;
+    flex:0 0 auto!important;
+    height:64px!important;
+    gap:8px!important;
+  }
+  .jp-brand img{
+    width:42px!important;
+    height:42px!important;
+    max-width:42px!important;
+    max-height:42px!important;
+    object-fit:contain!important;
+    background:transparent!important;
+  }
+  .jp-brand span,.jp-brand strong{
+    display:none!important;
+  }
+  .reference-actions{
+    margin-left:auto!important;
+    gap:7px!important;
+    height:40px!important;
+    min-width:0!important;
+  }
+  .theme-button,.compact-cart,.mobile-menu{
+    width:40px!important;
+    height:40px!important;
+    min-width:40px!important;
+    min-height:40px!important;
+    padding:0!important;
+    border-radius:14px!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 auto!important;
+  }
+  .theme-button[hidden],.compact-cart[hidden],.login-button[hidden],.mobile-menu[hidden]{
+    display:none!important;
+  }
+  .mobile-menu{
+    margin-left:0!important;
+    border:1px solid #ffd7b5!important;
+    background:#fff7ef!important;
+    color:var(--wd-orange-strong)!important;
+  }
+  .login-button{
+    height:40px!important;
+    min-width:86px!important;
+    max-width:110px!important;
+    padding:0 12px!important;
+    border-radius:14px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    background:var(--wd-orange)!important;
+    box-shadow:0 12px 28px rgba(248,93,27,.18)!important;
+  }
+  .login-button.logged-in{
+    width:76px!important;
+    min-width:76px!important;
+    max-width:76px!important;
+    padding:0 8px!important;
+    gap:6px!important;
+  }
+  .login-button.logged-in span{
+    display:none!important;
+  }
+  .login-button.logged-in svg{
+    width:13px!important;
+    height:13px!important;
+  }
+  .account-avatar{
+    width:25px!important;
+    height:25px!important;
+    min-width:25px!important;
+  }
+  .red-badge,#cartCount{
+    top:-6px!important;
+    right:-6px!important;
+  }
+}
+
+@media(max-width:760px){
+  body{
+    padding-top:0!important;
+  }
+  .section-shell{
+    width:calc(100% - 24px)!important;
+  }
+  .reference-header{
+    height:60px!important;
+  }
+  .reference-nav{
+    width:calc(100% - 18px)!important;
+    height:60px!important;
+  }
+  .jp-brand{
+    height:60px!important;
+  }
+  .jp-brand img{
+    width:39px!important;
+    height:39px!important;
+    max-width:39px!important;
+    max-height:39px!important;
+  }
+  .reference-actions{
+    gap:5px!important;
+  }
+  .theme-button,.compact-cart,.mobile-menu{
+    width:38px!important;
+    height:38px!important;
+    min-width:38px!important;
+    min-height:38px!important;
+    border-radius:13px!important;
+  }
+  .login-button{
+    height:38px!important;
+    min-width:78px!important;
+    max-width:94px!important;
+    padding:0 10px!important;
+    border-radius:13px!important;
+    font-size:12px!important;
+  }
+  .login-button.logged-in{
+    width:68px!important;
+    min-width:68px!important;
+    max-width:68px!important;
+  }
+  .reference-hero{
+    min-height:auto!important;
+    padding:56px 0 30px!important;
+    gap:22px!important;
+    background:
+      radial-gradient(circle at 7% 2%,rgba(255,122,0,.13),transparent 24%),
+      radial-gradient(circle at 88% 8%,rgba(122,79,255,.07),transparent 24%),
+      linear-gradient(180deg,#fff9f3 0%,#fff 62%,#fff7ef 100%)!important;
+  }
+  .hero-copy{
+    width:calc(100% - 24px)!important;
+  }
+  .hero-copy h1{
+    max-width:390px!important;
+    font-size:32px!important;
+    line-height:1.08!important;
+    letter-spacing:-1.15px!important;
+    color:#23130b!important;
+  }
+  .hero-copy h1 span{
+    color:var(--wd-orange-strong)!important;
+    background:none!important;
+    -webkit-text-fill-color:currentColor!important;
+  }
+  .hero-copy p{
+    max-width:360px!important;
+    margin:16px auto 22px!important;
+    font-size:13px!important;
+    line-height:1.6!important;
+    color:#766255!important;
+  }
+  .reference-cta{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+    width:min(340px,100%)!important;
+    margin-inline:auto!important;
+  }
+  .reference-cta a{
+    width:100%!important;
+    min-width:0!important;
+    height:44px!important;
+  }
+  .featured-window{
+    display:none!important;
+  }
+  .benefits-section,.catalog-section,.reviews-section,.faq-section{
+    padding:54px 0!important;
+  }
+  .catalog-heading{
+    display:block!important;
+    margin-bottom:20px!important;
+  }
+  .catalog-heading h2{
+    font-size:25px!important;
+    line-height:1.15!important;
+    letter-spacing:-.7px!important;
+  }
+  .catalog-heading p,.catalog-heading>span{
+    font-size:12px!important;
+    line-height:1.55!important;
+  }
+  .product-toolbar{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+    padding:0!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+    margin-bottom:14px!important;
+  }
+  .workdigie-layout .search-field,.search-field{
+    height:50px!important;
+    border:1px solid #f1d4bd!important;
+    border-radius:15px!important;
+    background:#fff!important;
+    box-shadow:0 12px 28px rgba(120,70,28,.07)!important;
+  }
+  .workdigie-layout .search-field input,.search-field input{
+    height:100%!important;
+    font-size:13px!important;
+  }
+  .category-pills{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:8px!important;
+    overflow-x:auto!important;
+    padding:0 2px 14px!important;
+    margin:0 -2px!important;
+    scrollbar-width:none!important;
+  }
+  .category-pills::-webkit-scrollbar{
+    display:none!important;
+  }
+  .category-pills button{
+    flex:0 0 auto!important;
+    min-height:38px!important;
+    padding:0 15px!important;
+    border-radius:999px!important;
+    white-space:nowrap!important;
+  }
+  .product-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:12px!important;
+  }
+  .product-card{
+    border-radius:16px!important;
+    border-color:#f0dcc8!important;
+    box-shadow:0 10px 24px rgba(96,49,15,.05)!important;
+  }
+  .product-card-media{
+    padding:13px 12px 0!important;
+  }
+  .product-card-body{
+    padding:10px 12px 14px!important;
+  }
+  .product-icon{
+    width:40px!important;
+    height:40px!important;
+    border-radius:12px!important;
+  }
+  .product-card-title h3{
+    min-height:34px!important;
+    font-size:12px!important;
+    line-height:1.25!important;
+    white-space:normal!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2!important;
+    -webkit-box-orient:vertical!important;
+    overflow:hidden!important;
+  }
+  .product-tags{
+    gap:4px!important;
+  }
+  .product-tag{
+    font-size:7px!important;
+    padding:3px 5px!important;
+  }
+  .product-pricing strong{
+    font-size:13px!important;
+  }
+  .reference-footer{
+    padding:44px 0 24px!important;
+    background:#f85d1b!important;
+  }
+  .footer-grid{
+    grid-template-columns:1fr!important;
+    gap:26px!important;
+  }
+  .footer-logo>img{
+    width:42px!important;
+    height:42px!important;
+  }
+  .footer-bottom{
+    display:grid!important;
+    gap:12px!important;
+  }
+  .chat-bubble{
+    right:14px!important;
+    bottom:calc(14px + env(safe-area-inset-bottom))!important;
+    width:48px!important;
+    height:48px!important;
+    padding:0!important;
+    justify-content:center!important;
+    border-radius:999px!important;
+    background:var(--wd-orange)!important;
+    box-shadow:0 14px 30px rgba(248,93,27,.25)!important;
+  }
+  .chat-bubble span{
+    display:none!important;
+  }
+  .chat-panel{
+    position:fixed!important;
+    inset:60px 0 0 0!important;
+    width:100%!important;
+    height:calc(100dvh - 60px)!important;
+    max-height:none!important;
+    border:0!important;
+    border-radius:18px 18px 0 0!important;
+    box-shadow:0 -18px 45px rgba(44,25,13,.18)!important;
+    z-index:140!important;
+  }
+  .chat-head{
+    height:64px!important;
+    padding:0 12px!important;
+    gap:10px!important;
+  }
+  .bot-avatar{
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    border-radius:12px!important;
+  }
+  .chat-head strong{
+    font-size:13px!important;
+  }
+  .chat-head span{
+    max-width:220px!important;
+    font-size:9px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .chat-head button{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+  }
+  .chat-messages{
+    padding:14px 12px!important;
+  }
+  .message{
+    max-width:92%!important;
+    padding:10px 12px!important;
+    border-radius:14px!important;
+    font-size:12px!important;
+    line-height:1.5!important;
+  }
+  .chat-form{
+    min-height:72px!important;
+    padding:10px 10px calc(10px + env(safe-area-inset-bottom))!important;
+    display:grid!important;
+    grid-template-columns:40px minmax(0,1fr) 48px!important;
+    align-items:end!important;
+    gap:8px!important;
+  }
+  .chat-attach{
+    width:40px!important;
+    height:48px!important;
+    border-radius:14px!important;
+  }
+  .chat-form textarea{
+    min-width:0!important;
+    min-height:48px!important;
+    max-height:120px!important;
+    padding:12px!important;
+    font-size:12px!important;
+    border-radius:14px!important;
+  }
+  .chat-form button{
+    width:48px!important;
+    min-width:48px!important;
+    height:48px!important;
+    border-radius:14px!important;
+  }
+  .chat-powered{
+    height:24px!important;
+    font-size:8px!important;
+  }
+  .modal-layer.product-page-layer{
+    inset:60px 0 0!important;
+    align-items:flex-start!important;
+    overflow:auto!important;
+    padding:10px 0 24px!important;
+  }
+  .product-page{
+    width:calc(100% - 18px)!important;
+    margin-inline:auto!important;
+    display:grid!important;
+    gap:12px!important;
+  }
+  .product-page-grid,.product-checkout-grid{
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+  }
+  .product-checkout-grid{
+    display:grid!important;
+  }
+  .checkout-steps{
+    display:grid!important;
+    gap:12px!important;
+  }
+  .product-sticky{
+    position:static!important;
+    display:grid!important;
+    gap:12px!important;
+  }
+  .product-sticky>article,.checkout-step{
+    border-radius:16px!important;
+  }
+  .product-sticky .detail-image{
+    width:76px!important;
+    height:76px!important;
+    border-radius:19px!important;
+  }
+  .product-sticky .detail-title{
+    font-size:18px!important;
+  }
+  .checkout-step-head{
+    height:auto!important;
+    min-height:64px!important;
+    padding:14px!important;
+  }
+  .checkout-step-body{
+    padding:14px!important;
+  }
+  .package-pills{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+  }
+  .package-pills span{
+    width:100%!important;
+    justify-content:space-between!important;
+  }
+  .product-page-close{
+    top:70px!important;
+    right:10px!important;
+  }
+  .product-page-close button{
+    width:38px!important;
+    height:38px!important;
+    border-radius:50%!important;
+  }
+}
+
+@media(max-width:420px){
+  .reference-nav{
+    width:calc(100% - 14px)!important;
+  }
+  .reference-actions{
+    gap:4px!important;
+  }
+  .theme-button,.compact-cart,.mobile-menu{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    min-height:36px!important;
+  }
+  .login-button{
+    min-width:70px!important;
+    max-width:82px!important;
+    height:36px!important;
+    padding:0 9px!important;
+  }
+  .login-button.logged-in{
+    width:60px!important;
+    min-width:60px!important;
+    max-width:60px!important;
+    padding:0 6px!important;
+  }
+  .account-avatar{
+    width:23px!important;
+    height:23px!important;
+    min-width:23px!important;
+  }
+  .hero-copy h1{
+    font-size:29px!important;
+  }
+  .product-grid{
+    gap:10px!important;
+  }
+  .product-card-media{
+    padding:11px 10px 0!important;
+  }
+  .product-card-body{
+    padding:9px 10px 13px!important;
+  }
+  .chat-head span{
+    max-width:170px!important;
+  }
+}
+
+@media(max-width:360px){
+  .product-grid{
+    grid-template-columns:1fr!important;
+  }
+  .reference-actions{
+    gap:3px!important;
+  }
+  .theme-button,.compact-cart,.mobile-menu{
+    width:34px!important;
+    height:34px!important;
+    min-width:34px!important;
+    min-height:34px!important;
+  }
+  .login-button{
+    min-width:64px!important;
+    max-width:74px!important;
+  }
+  .login-button.logged-in{
+    width:54px!important;
+    min-width:54px!important;
+    max-width:54px!important;
+  }
+  .jp-brand img{
+    width:35px!important;
+    height:35px!important;
+  }
+}
