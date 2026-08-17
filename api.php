@@ -322,7 +322,7 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
     }
     usort($matches,fn($a,$b)=>$b['score']<=>$a['score']);
     if($matches){
-      $lines=[]; foreach(array_slice($matches,0,5) as $match){ $p=$match['product']; $stock=product_stock($p); $lines[]=($p['title']??'Produk').' '.rupiah_text(product_base_price($p)).' • stok '.$stock; }
+      $lines=[]; foreach(array_slice($matches,0,5) as $match){ $p=$match['product']; $stock=product_stock($p); $price=(int)($p['price']??product_base_price($p)); $lines[]=($p['title']??'Produk').' '.rupiah_text($price).' • stok '.$stock; }
       $suffix=count($matches)>5?' Ada '.count($matches).' produk terkait, Fenita tampilkan yang paling dekat dulu ya.':'';
       json_response(['answer'=>implode("\n",$lines).$suffix,'escalate'=>false,'reason'=>'local_catalog'],200);
     }
