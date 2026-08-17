@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="WorkDigie adalah marketplace akun premium murah, bergaransi, dengan dukungan pelanggan setiap hari.">
+  <title>Marketplace Akun Premium Murah | WorkDigie</title>
+  <link rel="icon" href="assets/workdigie-mark.png?v=4" type="image/png">
+  <link rel="apple-touch-icon" href="assets/workdigie-mark.png?v=4">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20">
+</head>
+<body class="workdigie-layout">
+  <header class="reference-header">
+    <div class="reference-nav">
+      <a class="jp-brand" href="#home" aria-label="Beranda WorkDigie"><img src="assets/workdigie-wordmark.png" alt="WorkDigie"></a>
+      <nav aria-label="Navigasi utama">
+        <a href="#products">Produk</a>
+        <a href="api-llm.html">API LLM</a>
+        <button type="button" data-open-report>Lapor Masalah</button>
+        <button type="button" data-open-admin-chat>Hubungi CS</button>
+      </nav>
+      <div class="reference-actions">
+        <button id="notifButton" class="theme-button" type="button" aria-label="Notifikasi"><i data-lucide="bell"></i><b id="notifBadge" class="red-badge" style="display:none">0</b></button>
+        <button id="accountButton" class="login-button" type="button"><span>Masuk</span><i data-lucide="arrow-right"></i></button>
+        <button id="cartButton" class="compact-cart" type="button" aria-label="Keranjang"><i data-lucide="shopping-bag"></i><b id="cartCount">0</b></button>
+      </div>
+      <button class="mobile-menu" id="menuButton" type="button" aria-label="Buka menu"><i data-lucide="menu"></i></button>
+    </div>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="#home"><img src="assets/workdigie-wordmark.png" alt="WorkDigie"></a>
+    <nav class="side-nav">
+      <a class="nav-item active" href="#home"><i data-lucide="house"></i><span>Beranda</span></a>
+      <a class="nav-item" href="#products"><i data-lucide="shopping-bag"></i><span>Produk</span></a>
+      <a class="nav-item" href="api-llm.html"><i data-lucide="terminal"></i><span>API LLM</span></a>
+      <button class="nav-item" type="button" data-open-report><i data-lucide="triangle-alert"></i><span>Lapor Masalah</span></button>
+      <button class="nav-item" id="historyButton" type="button"><i data-lucide="receipt-text"></i><span>Pesanan</span></button>
+      <button class="nav-item" id="reviewsButton" type="button"><i data-lucide="star"></i><span>Ulasan</span></button>
+      <button class="nav-item" id="sideAccount" type="button"><i data-lucide="user"></i><span>Akun</span></button>
+      <button class="nav-item" id="infoButton" type="button"><i data-lucide="info"></i><span>Informasi</span></button>
+      <button class="nav-item" id="openChatSide" type="button"><i data-lucide="message-circle"></i><span>Hubungi CS</span><b id="sideChatBadge" class="red-badge" style="display:none">0</b></button>
+    </nav>
+  </aside>
+
+  <main>
+    <section class="reference-hero" id="home">
+      <div class="hero-copy">
+        <h1>Marketplace Akun<br>Premium Murah,<br>Bergaransi <span>&amp; Bantuan Setiap Hari</span></h1>
+        <p>Nikmati berbagai akun premium favorit seperti ChatGPT Plus, Spotify, YouTube Premium, dan lainnya dalam satu tempat.</p>
+        <div class="reference-cta">
+          <a href="#products"><i data-lucide="shopping-bag"></i> Lihat Akun Premium</a>
+          <a class="secondary" href="#benefits">Manfaat WorkDigie</a>
+        </div>
+      </div>
+      <div class="featured-window"><div class="featured-rail" id="featuredRail"></div></div>
+    </section>
+
+    <section class="benefits-section" id="benefits">
+      <div class="section-shell">
+        <h2>Manfaat Belanja Akun Premium di WorkDigie</h2>
+        <p class="section-lead">Dapatkan akses akun premium favorit dengan proses yang mudah, harga lebih hemat, dan bantuan pelanggan setiap saat.</p>
+        <div class="benefit-grid">
+          <article><i data-lucide="badge-dollar-sign"></i><h3>Harga Lebih Hemat</h3><p>Nikmati berbagai akun premium favorit dengan harga yang lebih terjangkau dibandingkan berlangganan langsung secara resmi.</p></article>
+          <article><i data-lucide="shield-check"></i><h3>Semua Produk Bergaransi</h3><p>Setiap pembelian dilengkapi garansi selama masa aktif produk. Jika ada kendala, tim kami akan membantu pengecekan dan solusi.</p></article>
+          <article><i data-lucide="package-open"></i><h3>Banyak Pilihan Produk</h3><p>Tersedia berbagai akun premium seperti ChatGPT Plus, Spotify, YouTube Premium, aplikasi produktivitas, dan lainnya.</p></article>
+          <article><i data-lucide="shopping-cart"></i><h3>Proses Pembelian Mudah</h3><p>Pilih produk, tentukan paket, lakukan pembayaran, lalu ikuti instruksi pengiriman akun dari tim WorkDigie.</p></article>
+          <article><i data-lucide="headphones"></i><h3>Chat Bantuan</h3><p>Pesan dapat dikirim kapan saja. Tim operasional membalas setiap hari pukul 10.00–22.00 WIB.</p></article>
+          <article><i data-lucide="circle-check-big"></i><h3>Akun Dicek Sebelum Dikirim</h3><p>Setiap akun akan dicek terlebih dahulu sebelum dikirim agar pelanggan bisa menggunakan layanan dengan lebih tenang.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="catalog-section section-shell" id="products">
+      <div class="catalog-heading"><div><span class="eyebrow">Produk WorkDigie</span><h2>Pilih akun premium favoritmu</h2><p>Harga hemat, stok terpantau, dan proses pemesanan mudah.</p></div><span id="resultCount">0 produk</span></div>
+      <div class="product-toolbar"><label class="search-field"><input id="searchInput" type="search" placeholder="Cari produk premium..."><i data-lucide="search"></i></label><select id="sortSelect" aria-label="Urutkan produk"><option value="default">Urutkan</option><option value="sold">Paling laris</option><option value="low">Harga terendah</option><option value="high">Harga tertinggi</option></select><button class="filter-toggle" id="filterToggle" type="button"><i data-lucide="sliders-horizontal"></i><span>Filter</span></button></div>
+      <div class="category-pills"><button class="active-cat" type="button" data-category="">Semua</button><button type="button" data-category="AI &amp; produktivitas">AI &amp; Produktivitas</button><button type="button" data-category="Hiburan premium">Hiburan</button><button type="button" data-category="Aplikasi premium">Aplikasi</button><button type="button" data-category="Developer API">Developer API</button></div>
+      <div class="filter-strip" id="filterStrip"><div><span>Stok</span><label><input type="radio" name="stock" value="all" checked> Semua</label><label><input type="radio" name="stock" value="ready"> Ready</label><label><input type="radio" name="stock" value="empty"> Habis</label></div><label><input id="bestFilter" type="checkbox"> Terlaris</label><label><input id="wholesaleFilter" type="checkbox"> Grosir</label><button id="resetFilter" type="button">Reset</button></div>
+      <div class="active-filters" id="activeFilters"></div>
+      <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <section class="company-section section-shell">
+      <div class="company-copy"><span class="eyebrow">Tentang WorkDigie</span><h2>WorkDigie</h2><p>WorkDigie membantu pelanggan mendapatkan akun premium private dengan proses pembayaran yang ringkas, informasi produk yang jelas, dan dukungan operasional setelah pembelian.</p><div class="company-contact"><a href="mailto:support@workdigie.com"><i data-lucide="mail"></i>support@workdigie.com</a><a href="https://t.me/workdigieofficial" target="_blank" rel="noreferrer"><i data-lucide="send"></i>@workdigie</a></div></div>
+    </section>
+
+    <section class="faq-section section-shell">
+      <h2>Pertanyaan yang Sering Ditanyakan</h2>
+      <div class="faq-list">
+        <details><summary>Apa itu WorkDigie?<i data-lucide="chevron-down"></i></summary><p>WorkDigie adalah marketplace akun premium dengan pilihan produk digital, harga hemat, garansi, dan dukungan pelanggan.</p></details>
+        <details><summary>Apakah WorkDigie aman?<i data-lucide="chevron-down"></i></summary><p>Setiap pesanan tercatat di akun pelanggan dan produk diperiksa sebelum dikirim. Bantuan tersedia melalui chat jika terjadi kendala.</p></details>
+        <details><summary>Produk apa saja yang tersedia di WorkDigie?<i data-lucide="chevron-down"></i></summary><p>Produk mencakup AI, hiburan, aplikasi produktivitas, serta layanan API. Daftar dan stok terbaru tersedia pada bagian produk.</p></details>
+        <details><summary>Bagaimana cara membeli produk?<i data-lucide="chevron-down"></i></summary><p>Pilih produk dan varian, masukkan ke keranjang, masuk ke akun, isi data checkout, lalu selesaikan pembayaran QRIS.</p></details>
+        <details><summary>Metode pembayaran apa yang tersedia?<i data-lucide="chevron-down"></i></summary><p>Saat ini pembayaran dilakukan menggunakan QRIS sesuai nominal pesanan.</p></details>
+        <details><summary>Apakah produk bergaransi?<i data-lucide="chevron-down"></i></summary><p>Ya. Ketentuan dan masa garansi mengikuti informasi pada setiap produk dan varian.</p></details>
+        <details><summary>Akun dikirim lewat mana?<i data-lucide="chevron-down"></i></summary><p>Detail pesanan dan proses pengiriman ditangani melalui riwayat pesanan serta chat dengan admin WorkDigie.</p></details>
+        <details><summary>Bagaimana jika akun bermasalah?<i data-lucide="chevron-down"></i></summary><p>Buka chat bantuan, sertakan nomor pesanan dan detail kendala agar tim dapat melakukan pengecekan.</p></details>
+        <details><summary>Apakah CS WorkDigie tersedia 24 jam?<i data-lucide="chevron-down"></i></summary><p>Pesan dapat dikirim kapan saja dan akan ditangani sesuai antrean layanan.</p></details>
+        <details><summary>Bagaimana cara klaim garansi?<i data-lucide="chevron-down"></i></summary><p>Hubungi admin melalui chat, pilih pesanan terkait, lalu jelaskan kendala secara lengkap.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="reference-footer">
+    <div class="section-shell footer-grid">
+      <div class="footer-about"><div class="footer-logo"><img src="assets/workdigie-mark.png" alt=""><strong>WorkDigie</strong></div><p>Marketplace akun premium private dan bergaransi milik WorkDigie. Belanja mudah, hemat, dan didukung bantuan pelanggan.</p><div class="social-icons"><button type="button" data-social-pending aria-label="Twitter"><i data-lucide="twitter"></i></button><button type="button" data-social-pending aria-label="Instagram"><i data-lucide="instagram"></i></button><button type="button" data-social-pending aria-label="Facebook"><i data-lucide="facebook"></i></button></div><a class="footer-contact" href="mailto:support@workdigie.com">support@workdigie.com</a><a class="footer-contact" href="https://t.me/workdigieofficial" target="_blank" rel="noreferrer">Telegram @workdigie</a></div>
+      <div><h3>Produk</h3><a href="#products">ChatGPT Plus</a><a href="#products">Spotify</a><a href="#products">YouTube Premium</a><a href="#products">Aplikasi Premium</a></div>
+      <div><h3>Layanan</h3><a href="api-llm.html">API LLM</a><a href="#products">AI Tools</a><a href="#products">Hiburan</a><a href="#products">Produktivitas</a></div>
+      <div><h3>Bantuan</h3><button type="button" id="infoButtonFooter">Tentang Kami</button><button type="button" data-open-admin-chat>Hubungi Kami</button><button type="button" data-open-report>Lapor Masalah</button><a href="docs.html">Syarat Layanan</a></div>
+    </div>
+    <div class="section-shell footer-bottom"><span>© 2026 WorkDigie. Seluruh hak cipta dilindungi.</span><span><i data-lucide="lock-keyhole"></i> Pembayaran Aman &nbsp; Indonesia • Global</span></div>
+  </footer>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-hidden="true"><div class="drawer-head"><div><small>KERANJANG</small><h2>Pesanan kamu</h2></div><button class="icon-button" data-close-cart type="button" aria-label="Tutup keranjang"><i data-lucide="x"></i></button></div><div class="cart-items" id="cartItems"></div><div class="cart-footer"><div><span>Total</span><strong id="cartTotal">Rp0</strong></div><button class="checkout-button" id="checkoutButton" type="button">Lanjut checkout <i data-lucide="arrow-right"></i></button></div></aside><div class="overlay" id="overlay"></div>
+  <section class="chat-panel" id="chatPanel" aria-hidden="true"><div class="chat-head"><div class="bot-avatar"><img src="assets/workdigie-mark.png" alt=""></div><div><strong id="chatTitle">WorkDigie Care</strong><span><i></i> Asisten WorkDigie &amp; Tim Operasional</span></div><button id="closeChat" type="button" aria-label="Tutup chat"><i data-lucide="x"></i></button></div><div class="chat-messages" id="chatMessages" aria-live="polite"></div><div class="chat-attachment-preview" id="chatAttachmentPreview" hidden></div><form class="chat-form" id="chatForm"><label class="chat-attach" aria-label="Lampirkan gambar"><i data-lucide="paperclip"></i><input id="chatAttachment" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><textarea id="chatInput" rows="1" maxlength="1200" placeholder="Ketik pesan Anda" autocomplete="off" aria-label="Tulis pesan"></textarea><button type="submit" aria-label="Kirim pesan"><i data-lucide="send"></i></button></form><div class="chat-powered"><i data-lucide="shield-check"></i> Asisten WorkDigie · jangan kirim password atau OTP</div></section>
+  <button class="chat-bubble" id="chatBubble" type="button" aria-label="Buka chat"><i data-lucide="message-circle"></i><span>Chat CS</span><b id="chatBadge" class="red-badge" style="display:none">0</b></button>
+  <div class="modal-layer" id="modalLayer" aria-hidden="true"><section class="modal" id="modalContent" role="dialog" aria-modal="true"></section></div><div class="toast" id="toast" role="status"></div>
+  <script src="assets/vendor/lucide.min.js?v=2"></script><script src="assets/vendor/qrcode.min.js?v=2"></script><script src="catalog.js?v=18"></script><script src="qris.js?v=18"></script><script src="script.js?v=25"></script>
+</body>
+</html>

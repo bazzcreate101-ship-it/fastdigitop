@@ -2,7 +2,10 @@ node_modules/
 .wrangler/
 .env
 .env.*
+!.env.example
+.workdigie-data/
 *.log
-*.zip
 .DS_Store
 Thumbs.db
+*.zip
+System.Management.Automation.Internal.Host.InternalHost/

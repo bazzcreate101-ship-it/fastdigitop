@@ -4,6 +4,17 @@ let activeChatId = '';
 let activeAccountId = '';
 let activeLlmUserId = '';
 let chatSortMode = 'unread';
+let productPage = 1;
+let productSearch = '';
+const productPageSize = 12;
+let orderPage = 1;
+let orderSearch = '';
+let orderStatus = '';
+const orderPageSize = 8;
+let accountPage = 1;
+let accountSearch = '';
+const accountPageSize = 8;
+let accountDetailOpen = false;
 const chatDetails = {};
 let chatDetailLoadingId = '';
 
@@ -150,7 +161,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 async function api(url, options = {}) {
-  const response = await fetch(url, { headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options });
+  const response = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', 'X-WorkDigie-Request': '1', ...(options.headers || {}) } });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) { if (response.status === 401 && url !== '/api/admin/login') showLogin(); throw new Error(data.error || 'Terjadi kesalahan'); }
   return data;
@@ -158,7 +169,7 @@ async function api(url, options = {}) {
 
 function showLogin() { loginView.hidden = false; adminApp.hidden = true; }
 async function load() {
-  try { adminState = await api('/api/admin/state'); loginView.hidden = true; adminApp.hidden = false; normalizeActiveSelections(); render(); }
+  try { const [state, aiHealth] = await Promise.all([api('/api/admin/state'), api('/api/ai/health').catch(() => ({ configured: false, provider: 'tidak tersedia' }))]); adminState = { ...state, aiHealth }; loginView.hidden = true; adminApp.hidden = false; normalizeActiveSelections(); render(); }
   catch { showLogin(); }
 }
 
@@ -178,9 +189,38 @@ function statsPanel() {
   const revenue = adminState.orders.filter((order) => ['paid', 'completed'].includes(order.status)).reduce((total, order) => total + Number(order.total || 0), 0);
   return `<div class="stats"><article class="stat"><span>Produk aktif</span><strong>${activeProducts}</strong></article><article class="stat"><span>Total stok</span><strong>${stock}</strong></article><article class="stat"><span>Pesanan pending</span><strong>${pending}</strong></article><article class="stat"><span>Omzet tercatat</span><strong>${money(revenue)}</strong></article></div>`;
 }
+function adminPagination(prefix, page, pageCount, total, pageSize) {
+  const start = total ? (page - 1) * pageSize + 1 : 0;
+  const end = Math.min(page * pageSize, total);
+  const pages = Array.from({ length: pageCount }, (_, index) => `<button type="button" class="${page === index + 1 ? 'active' : ''}" data-${prefix}-page="${index + 1}">${index + 1}</button>`).join('');
+  return `<div class="admin-pagination"><span>Menampilkan ${start}–${end} dari ${total}</span><div><button type="button" data-${prefix}-page="${Math.max(1, page - 1)}" ${page === 1 ? 'disabled' : ''} aria-label="Halaman sebelumnya"><i data-lucide="chevron-left"></i></button>${pages}<button type="button" data-${prefix}-page="${Math.min(pageCount, page + 1)}" ${page === pageCount ? 'disabled' : ''} aria-label="Halaman berikutnya"><i data-lucide="chevron-right"></i></button></div></div>`;
+}
 
+function isAdminAiProduct(product) { return /(^|\s)AI(?:\s|$)|GPT EDU|CHATGPT|CLAUDE|GROK|GEMINI|PERPLEXITY|KIRO|LEONARDO|KLING|DOLA AI/i.test(product.title || ''); }
+function isAdminSharingProduct(product) {
+  const explicit = [product.title, product.access, product.thumbnail].filter(Boolean).join(' ');
+  const context = [product.title, product.access, product.description].filter(Boolean).join(' ');
+  return /sharing/i.test(explicit) && !/(bukan|non[- ]?)\s*sharing|private|privat/i.test(context);
+}
 function productTable(list = adminState.products) {
-  return `<div class="panel"><div class="panel-head"><div><h2>Kelola produk</h2><span class="panel-meta">Auto-restock menambah 8 saat stok kurang dari 2</span></div><input id="adminSearch" type="search" placeholder="Cari produk..." aria-label="Cari produk"></div><div class="table-wrap"><table><thead><tr><th>PRODUK</th><th>HARGA</th><th>STOK</th><th>AKTIF</th><th>AUTO +8</th><th></th></tr></thead><tbody>${list.map((product) => `<tr data-product-row="${product.id}"><td><img src="${escapeHtml(product.thumbnail)}" alt=""><span class="product-name">${escapeHtml(product.title)}</span></td><td><input class="table-input" data-price value="${Number(product.price || 0)}" type="number" min="0" aria-label="Harga ${escapeHtml(product.title)}"></td><td><input class="table-input stock-input" data-stock value="${Number(product.stock || 0)}" type="number" min="0" max="49" aria-label="Stok ${escapeHtml(product.title)}"></td><td><input class="toggle" data-enabled type="checkbox" ${product.enabled ? 'checked' : ''} aria-label="Aktifkan ${escapeHtml(product.title)}"></td><td><input class="toggle" data-auto-restock type="checkbox" ${product.autoRestock ? 'checked' : ''} aria-label="Auto-restock ${escapeHtml(product.title)}"></td><td class="product-actions"><button class="save-product" data-save-product="${product.id}">Simpan</button>${product.variants?.length ? `<button class="variant-btn" data-variant-product="${product.id}">Varian (${product.variants.length})</button>` : `<button class="variant-btn" data-variant-product="${product.id}">+ Varian</button>`}</td></tr>` + (product.variants?.length ? `<tr class="variant-row" id="variant-row-${product.id}" hidden><td colspan="6"><div class="variant-editor" id="variant-editor-${product.id}">${variantEditorHtml(product)}</div></td></tr>` : `<tr class="variant-row" id="variant-row-${product.id}" hidden><td colspan="6"><div class="variant-editor" id="variant-editor-${product.id}">${variantEditorHtml(product)}</div></td></tr>`)).join('')}</tbody></table></div></div>`;
+  const filtered = list.filter((product) => !productSearch || [product.title, product.category, product.access].some((value) => String(value || '').toLowerCase().includes(productSearch)));
+  const pageCount = Math.max(1, Math.ceil(filtered.length / productPageSize));
+  productPage = Math.min(Math.max(1, productPage), pageCount);
+  const pageItems = filtered.slice((productPage - 1) * productPageSize, productPage * productPageSize);
+  const rows = pageItems.map((product) => {
+    const sharing = isAdminSharingProduct(product);
+    const badge = sharing ? '<small class="product-policy sharing">Sharing • stok dikunci 0</small>' : (isAdminAiProduct(product) ? '<small class="product-policy private">AI Private</small>' : '');
+    const variantRow = `<tr class="variant-row" id="variant-row-${product.id}" hidden><td colspan="7"><div class="product-full-editor" id="variant-editor-${product.id}">${productDetailsHtml(product)}${variantEditorHtml(product)}</div></td></tr>`;
+    const restockMode = product.autoRestockMode === 'random' ? 'random' : 'fixed';
+    return `<tr data-product-row="${product.id}"><td><img src="${escapeHtml(product.thumbnail)}" alt="" onerror="this.onerror=null;this.src='assets/workdigie-mark.png'"><span class="product-name">${escapeHtml(product.title)}${badge}<small class="product-mobile-summary">${money(product.price)} · stok ${Number(product.stock || 0)} · ${Number(product.points_reward || 0)} poin</small></span><button type="button" class="product-mobile-toggle" data-toggle-product-card="${product.id}"><i data-lucide="sliders-horizontal"></i>Kelola</button></td><td><input class="table-input" data-price value="${Number(product.price || 0)}" type="number" min="0" aria-label="Harga ${escapeHtml(product.title)}"></td><td><input class="table-input stock-input" data-stock value="${Number(product.stock || 0)}" type="number" min="0" max="999999" ${sharing ? 'disabled' : ''} aria-label="Stok ${escapeHtml(product.title)}"></td><td><input class="table-input" data-points-reward value="${Number(product.points_reward || 0)}" type="number" min="0" max="100000" aria-label="Poin ${escapeHtml(product.title)}"></td><td><input class="toggle" data-enabled type="checkbox" ${product.enabled ? 'checked' : ''} aria-label="Aktifkan ${escapeHtml(product.title)}"></td><td><div class="restock-control"><label><input class="toggle" data-auto-restock type="checkbox" ${product.autoRestock ? 'checked' : ''} ${sharing ? 'disabled' : ''}> Aktif</label><select data-auto-restock-mode ${sharing ? 'disabled' : ''}><option value="fixed" ${restockMode === 'fixed' ? 'selected' : ''}>Jumlah tetap</option><option value="random" ${restockMode === 'random' ? 'selected' : ''}>Acak 7–11</option></select><label>Tambah <input data-auto-restock-amount type="number" min="1" max="999999" value="${Number(product.autoRestockAmount || 8)}" ${sharing ? 'disabled' : ''}></label><label>Saat stok ≤ <input data-auto-restock-threshold type="number" min="0" max="999999" value="${Number(product.autoRestockThreshold ?? 1)}" ${sharing ? 'disabled' : ''}></label></div></td><td class="product-actions"><button class="save-product" data-save-product="${product.id}">Simpan</button><button class="variant-btn" data-variant-product="${product.id}">Edit detail</button><button class="delete-product" data-delete-product="${product.id}">Hapus</button></td></tr>${variantRow}`;
+  }).join('');
+  const start = filtered.length ? (productPage - 1) * productPageSize + 1 : 0;
+  const end = Math.min(productPage * productPageSize, filtered.length);
+  const pages = Array.from({ length: pageCount }, (_, index) => `<button type="button" class="${productPage === index + 1 ? 'active' : ''}" data-product-page="${index + 1}">${index + 1}</button>`).join('');
+  return `<div class="panel product-admin-panel"><div class="panel-head"><div><h2>Kelola produk</h2><span class="panel-meta">${filtered.length} produk ditemukan · perubahan tersinkron ke toko</span></div><div class="panel-head-actions"><input id="adminSearch" type="search" value="${escapeHtml(productSearch)}" placeholder="Cari produk..." aria-label="Cari produk"><button class="save-product" type="button" data-add-product><i data-lucide="plus"></i>Tambah produk</button></div></div><div class="table-wrap"><table><thead><tr><th>PRODUK</th><th>HARGA</th><th>STOK</th><th>POIN</th><th>AKTIF</th><th>AUTO-RESTOCK</th><th>AKSI</th></tr></thead><tbody>${rows || '<tr><td colspan="7"><div class="empty-admin">Produk tidak ditemukan.</div></td></tr>'}</tbody></table></div><div class="admin-pagination"><span>Menampilkan ${start}–${end} dari ${filtered.length}</span><div><button type="button" data-product-page="${Math.max(1, productPage - 1)}" ${productPage === 1 ? 'disabled' : ''} aria-label="Halaman sebelumnya"><i data-lucide="chevron-left"></i></button>${pages}<button type="button" data-product-page="${Math.min(pageCount, productPage + 1)}" ${productPage === pageCount ? 'disabled' : ''} aria-label="Halaman berikutnya"><i data-lucide="chevron-right"></i></button></div></div></div>`;
+}
+function productDetailsHtml(product) {
+  return `<form class="product-details-form" data-product-details="${product.id}"><h4>Informasi storefront</h4><div class="product-details-grid"><label>JUDUL<input name="title" required maxlength="120" value="${escapeHtml(product.title)}"></label><label>KATEGORI<input name="category" maxlength="60" value="${escapeHtml(product.category || '')}"></label><label class="wide">URL GAMBAR<input name="thumbnail" required maxlength="500" value="${escapeHtml(product.thumbnail)}"></label><label>AKSES<input name="access" maxlength="120" value="${escapeHtml(product.access || '')}"></label><label>DURASI<input name="duration" maxlength="60" value="${escapeHtml(product.duration || '')}"></label><label>GARANSI<input name="warranty" maxlength="60" value="${escapeHtml(product.warranty || '')}"></label><label>BADGE (pisahkan koma)<input name="badges" maxlength="180" value="${escapeHtml((product.badges || []).join(', '))}"></label><label>URUTAN HERO<input name="featuredRank" type="number" min="0" max="99" value="${Number(product.featuredRank || 0)}"></label><label class="check"><input name="is_best_seller" type="checkbox" ${product.is_best_seller ? 'checked' : ''}> Best seller</label><label class="wide">DESKRIPSI<textarea name="description" maxlength="2000">${escapeHtml(product.description || '')}</textarea></label></div><button class="save-product" type="submit">Simpan semua informasi</button></form>`;
 }
 function variantEditorHtml(product) {
   const variants = product.variants || [];
@@ -189,22 +229,42 @@ function variantEditorHtml(product) {
 
 function orderTable() {
   if (!adminState.orders.length) return '<div class="panel"><div class="panel-head"><h2>Pesanan</h2></div><div class="empty-admin">Belum ada pesanan.</div></div>';
-  return `<div class="panel"><div class="panel-head"><h2>Pesanan</h2><span class="panel-meta">${adminState.orders.length} transaksi</span></div><div class="table-wrap"><table><thead><tr><th>ID</th><th>PELANGGAN</th><th>ITEM</th><th>TOTAL</th><th>STATUS</th></tr></thead><tbody>${adminState.orders.map((order) => { const statuses = order.status === 'expired' ? ['expired', 'pending', 'cancelled'] : ['pending', 'paid', 'completed', 'cancelled']; const canEditCustomer = ['pending', 'paid'].includes(order.status); return `<tr><td><b>${escapeHtml(order.id)}</b><br><small>${formatDateTime(order.createdAt)}</small>${order.expiresAt && order.status === 'pending' ? `<br><small>Expired ${new Date(order.expiresAt).toLocaleTimeString('id-ID')}</small>` : ''}</td><td><b>${escapeHtml(order.customer?.name || '-')}</b><br>${escapeHtml(order.customer?.whatsapp || '-')}${order.customer?.note ? `<br><small>${escapeHtml(order.customer.note)}</small>` : ''}${canEditCustomer ? `<br><button class="edit-customer-btn" data-edit-customer="${escapeHtml(order.id)}"><i data-lucide="pencil"></i> Edit WA/Nama</button>` : ''}</td><td>${(order.items || []).map((line) => `${escapeHtml(line.title || adminState.products.find((product) => product.id === line.id)?.title || line.id)}${line.ownGmail ? ' - Gmail sendiri' : ''}${line.reseller ? ' - Reseller' : ''} x${line.quantity}`).join('<br>')}</td><td>${money(order.total)}</td><td><select class="order-select status ${escapeHtml(order.status)}" data-order-status="${escapeHtml(order.id)}" data-previous-status="${escapeHtml(order.status)}">${statuses.map((status) => `<option value="${status}" ${order.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select></td></tr>${canEditCustomer ? `<tr class="customer-edit-row" id="edit-row-${escapeHtml(order.id)}" hidden><td colspan="5"><form class="customer-edit-form" data-order-id="${escapeHtml(order.id)}"><div class="customer-edit-fields"><label>NAMA<input name="name" required maxlength="80" value="${escapeHtml(order.customer?.name || '')}"></label><label>NOMOR WHATSAPP<input name="whatsapp" required pattern="\\+?[0-9]{9,15}" inputmode="tel" value="${escapeHtml(order.customer?.whatsapp || '')}" placeholder="Contoh: 6281234567890"></label><label class="wide">CATATAN<input name="note" maxlength="500" value="${escapeHtml(order.customer?.note || '')}"></label></div><div class="customer-edit-actions"><button type="submit">Simpan perubahan</button><button type="button" data-cancel-edit-customer="${escapeHtml(order.id)}">Batal</button></div></form></td></tr>` : ''}`; }).join('')}</tbody></table></div></div>`;
+  const filtered = adminState.orders.filter((order) => {
+    const haystack = [order.id, order.customer?.name, order.customer?.whatsapp, ...(order.items || []).map((line) => line.title)].join(' ').toLowerCase();
+    return (!orderSearch || haystack.includes(orderSearch)) && (!orderStatus || order.status === orderStatus);
+  });
+  const pageCount = Math.max(1, Math.ceil(filtered.length / orderPageSize));
+  orderPage = Math.min(Math.max(1, orderPage), pageCount);
+  const pageOrders = filtered.slice((orderPage - 1) * orderPageSize, orderPage * orderPageSize);
+  return `<div class="panel order-admin-panel"><div class="panel-head"><div><h2>Pesanan</h2><span class="panel-meta">${filtered.length} dari ${adminState.orders.length} transaksi</span></div><div class="order-toolbar"><input id="orderSearch" type="search" value="${escapeHtml(orderSearch)}" placeholder="Cari ID, nama, WA, atau produk..."><select id="orderStatusFilter" aria-label="Filter status"><option value="">Semua status</option>${['pending','paid','completed','cancelled','expired'].map((status)=>`<option value="${status}" ${orderStatus === status ? 'selected' : ''}>${status[0].toUpperCase()+status.slice(1)}</option>`).join('')}</select></div></div><div class="table-wrap"><table><thead><tr><th>ID</th><th>PELANGGAN</th><th>ITEM</th><th>TOTAL</th><th>STATUS</th></tr></thead><tbody>${pageOrders.map((order) => { const statuses = order.status === 'expired' ? ['expired', 'pending', 'cancelled'] : ['pending', 'paid', 'completed', 'cancelled']; const canEditCustomer = ['pending', 'paid'].includes(order.status); const expired = order.expiresAt && order.status === 'pending' && new Date(order.expiresAt).getTime() < Date.now(); return `<tr data-order-row data-order-state="${escapeHtml(order.status)}"><td><b>${escapeHtml(order.id)}</b><br><small>${formatDateTime(order.createdAt)}</small>${expired ? '<br><small class="order-expired-label">Batas bayar terlewati</small>' : ''}</td><td><b>${escapeHtml(order.customer?.name || '-')}</b><br>${escapeHtml(order.customer?.whatsapp || '-')}${order.customer?.note ? `<br><small>${escapeHtml(order.customer.note)}</small>` : ''}${canEditCustomer ? `<br><button class="edit-customer-btn" data-edit-customer="${escapeHtml(order.id)}"><i data-lucide="pencil"></i> Edit WA/Nama</button>` : ''}</td><td>${(order.items || []).map((line) => `${escapeHtml(line.title || adminState.products.find((product) => product.id === line.id)?.title || line.id)}${line.reseller ? ' - Reseller' : ''} x${line.quantity}`).join('<br>')}</td><td>${money(order.total)}</td><td><select class="order-select status ${escapeHtml(order.status)}" data-order-status="${escapeHtml(order.id)}" data-previous-status="${escapeHtml(order.status)}">${statuses.map((status) => `<option value="${status}" ${order.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select></td></tr>${canEditCustomer ? `<tr class="customer-edit-row" id="edit-row-${escapeHtml(order.id)}" hidden><td colspan="5"><form class="customer-edit-form" data-order-id="${escapeHtml(order.id)}"><div class="customer-edit-fields"><label>NAMA<input name="name" required maxlength="80" value="${escapeHtml(order.customer?.name || '')}"></label><label>NOMOR WHATSAPP<input name="whatsapp" required pattern="\\+?[0-9]{9,15}" inputmode="tel" value="${escapeHtml(order.customer?.whatsapp || '')}" placeholder="Contoh: 6281234567890"></label><label class="wide">CATATAN<input name="note" maxlength="500" value="${escapeHtml(order.customer?.note || '')}"></label></div><div class="customer-edit-actions"><button type="submit">Simpan perubahan</button><button type="button" data-cancel-edit-customer="${escapeHtml(order.id)}">Batal</button></div></form></td></tr>` : ''}`; }).join('') || '<tr><td colspan="5"><div class="empty-admin">Pesanan tidak ditemukan.</div></td></tr>'}</tbody></table></div>${adminPagination('order', orderPage, pageCount, filtered.length, orderPageSize)}</div>`;
 }
 
 function voucherPanel() {
   const vouchers = adminState.vouchers || [];
   const categoryOptions = (selected = '') => ['', 'AI & produktivitas', 'Developer API', 'Hiburan premium', 'Aplikasi premium'].map((category) => `<option value="${escapeHtml(category)}" ${category === selected ? 'selected' : ''}>${category || 'Semua kategori'}</option>`).join('');
   const typeOptions = (selected = 'amount') => `<option value="amount" ${selected === 'amount' ? 'selected' : ''}>Nominal</option><option value="percent" ${selected === 'percent' ? 'selected' : ''}>Persen</option>`;
-  return `<div class="voucher-workspace"><form class="panel voucher-form" id="voucherForm"><div class="panel-head"><div><h2>Buat voucher</h2><span class="panel-meta">Kode promo dipakai pembeli saat checkout</span></div></div><div class="voucher-fields"><label>KODE<input name="code" required maxlength="32" placeholder="SPESIALAI07"></label><label>TIPE<select name="type">${typeOptions('percent')}</select></label><label>NILAI<input name="value" required type="number" min="1" placeholder="16"></label><label>MIN. BELANJA<input name="minSubtotal" type="number" min="0" value="0"></label><label>MIN. PRODUK<input name="minQuantity" type="number" min="0" value="2"></label><label>KATEGORI<select name="requiredCategory">${categoryOptions('AI & produktivitas')}</select></label><label>KUOTA<input name="maxUses" type="number" min="0" value="0"><small>0 = tanpa batas</small></label><label>EXPIRED<input name="expiresAt" type="date"></label><label class="wide">DESKRIPSI<input name="description" maxlength="120" placeholder="Diskon 16% minimal 2 produk AI yang sama"></label><label class="voucher-active"><input name="requireSameProduct" type="checkbox" checked> Wajib produk sama</label><label class="voucher-active"><input name="enabled" type="checkbox" checked> Aktif</label></div><button type="submit">Buat voucher</button></form><div class="panel"><div class="panel-head"><div><h2>Kelola voucher</h2><span class="panel-meta">${vouchers.length} kode promo</span></div><input id="voucherSearch" type="search" placeholder="Cari kode..."></div><div class="voucher-cards">${vouchers.length ? vouchers.map((voucher) => `<article class="voucher-admin-card" data-voucher-row="${escapeHtml(voucher.code)}"><div class="voucher-admin-top"><div><b>${escapeHtml(voucher.code)}</b><small>${Number(voucher.used || 0)} terpakai${Number(voucher.maxUses || 0) ? ` dari ${Number(voucher.maxUses || 0)}` : ''}</small></div><label class="voucher-switch"><input data-voucher-enabled type="checkbox" ${voucher.enabled === false ? '' : 'checked'}> Aktif</label></div><div class="voucher-edit-grid"><label>Kode<input data-voucher-code maxlength="32" value="${escapeHtml(voucher.code)}"></label><label>Tipe<select data-voucher-type>${typeOptions(voucher.type)}</select></label><label>Nilai<input data-voucher-value type="number" min="1" value="${Number(voucher.value || 0)}"></label><label>Min. belanja<input data-voucher-min-subtotal type="number" min="0" value="${Number(voucher.minSubtotal || 0)}"></label><label>Min. produk<input data-voucher-min-quantity type="number" min="0" value="${Number(voucher.minQuantity || 0)}"></label><label>Kategori<select data-voucher-category>${categoryOptions(voucher.requiredCategory || '')}</select></label><label>Kuota<input data-voucher-max-uses type="number" min="0" value="${Number(voucher.maxUses || 0)}"></label><label>Expired<input data-voucher-expires type="date" value="${escapeHtml(String(voucher.expiresAt || '').slice(0, 10))}"></label><label class="wide">Deskripsi<input data-voucher-description maxlength="120" value="${escapeHtml(voucher.description || '')}"></label><label class="voucher-check"><input data-voucher-same-product type="checkbox" ${voucher.requireSameProduct ? 'checked' : ''}> Minimal produk harus dari produk yang sama</label></div><div class="voucher-admin-actions"><button class="save-product" data-save-voucher="${escapeHtml(voucher.code)}">Simpan</button><button class="delete-voucher" data-delete-voucher="${escapeHtml(voucher.code)}">Hapus</button></div></article>`).join('') : '<div class="empty-admin">Belum ada voucher.</div>'}</div></div></div>`;
+  return `<div class="voucher-workspace"><form class="panel voucher-form" id="voucherForm"><div class="panel-head"><div><h2>Buat voucher baru</h2><span class="panel-meta">Isi aturan promo, lalu aktifkan ketika siap dipakai pembeli.</span></div></div><div class="voucher-fields"><label>KODE<input name="code" required maxlength="32" placeholder="Contoh: WORKHEMAT"></label><label>TIPE<select name="type">${typeOptions('amount')}</select></label><label>NILAI<input name="value" required type="number" min="1" placeholder="Contoh: 5000"></label><label>MIN. BELANJA<input name="minSubtotal" type="number" min="0" value="0"></label><label>MIN. PRODUK<input name="minQuantity" type="number" min="0" value="0"></label><label>KATEGORI<select name="requiredCategory">${categoryOptions('')}</select></label><label>KUOTA<input name="maxUses" type="number" min="0" value="0"><small>0 = tanpa batas</small></label><label>BERLAKU SAMPAI<input name="expiresAt" type="date"></label><label class="wide">DESKRIPSI<input name="description" maxlength="120" placeholder="Jelaskan manfaat dan syarat voucher"></label><label class="voucher-active"><input name="requireSameProduct" type="checkbox"> Wajib produk sama</label><label class="voucher-active"><input name="enabled" type="checkbox" checked> Langsung aktif</label></div><button type="submit"><i data-lucide="plus"></i>Buat voucher</button></form><div class="panel"><div class="panel-head"><div><h2>Voucher tersedia</h2><span class="panel-meta">${vouchers.length} kode promo</span></div><input id="voucherSearch" type="search" placeholder="Cari kode..."></div><div class="voucher-cards">${vouchers.length ? vouchers.map((voucher) => `<article class="voucher-admin-card" data-voucher-row="${escapeHtml(voucher.code)}"><div class="voucher-admin-top"><div><b>${escapeHtml(voucher.code)}</b><small>${escapeHtml(voucher.description || 'Tanpa deskripsi')} · ${Number(voucher.used || 0)} terpakai${Number(voucher.maxUses || 0) ? ` dari ${Number(voucher.maxUses || 0)}` : ''}</small></div><div class="voucher-summary-actions"><label class="voucher-switch"><input data-voucher-enabled type="checkbox" ${voucher.enabled === false ? '' : 'checked'}> Aktif</label><button type="button" class="voucher-edit-toggle" data-edit-voucher="${escapeHtml(voucher.code)}"><i data-lucide="pencil"></i>Edit</button></div></div><div class="voucher-editor"><div class="voucher-edit-grid"><label>Kode<input data-voucher-code maxlength="32" value="${escapeHtml(voucher.code)}"></label><label>Tipe<select data-voucher-type>${typeOptions(voucher.type)}</select></label><label>Nilai<input data-voucher-value type="number" min="1" value="${Number(voucher.value || 0)}"></label><label>Min. belanja<input data-voucher-min-subtotal type="number" min="0" value="${Number(voucher.minSubtotal || 0)}"></label><label>Min. produk<input data-voucher-min-quantity type="number" min="0" value="${Number(voucher.minQuantity || 0)}"></label><label>Kategori<select data-voucher-category>${categoryOptions(voucher.requiredCategory || '')}</select></label><label>Kuota<input data-voucher-max-uses type="number" min="0" value="${Number(voucher.maxUses || 0)}"></label><label>Berlaku sampai<input data-voucher-expires type="date" value="${escapeHtml(String(voucher.expiresAt || '').slice(0, 10))}"></label><label class="wide">Deskripsi<input data-voucher-description maxlength="120" value="${escapeHtml(voucher.description || '')}"></label><label class="voucher-check"><input data-voucher-same-product type="checkbox" ${voucher.requireSameProduct ? 'checked' : ''}> Minimal pembelian harus produk yang sama</label></div><div class="voucher-admin-actions"><button class="save-product" data-save-voucher="${escapeHtml(voucher.code)}">Simpan perubahan</button><button class="delete-voucher" data-delete-voucher="${escapeHtml(voucher.code)}">Hapus voucher</button></div></div></article>`).join('') : '<div class="empty-admin">Belum ada voucher.</div>'}</div></div></div>`;
 }
 
 function accountTable() {
-  const users = adminState.users || [];
-  if (!activeAccountId && users.length) activeAccountId = users[0].id;
-  const selected = users.find((user) => user.id === activeAccountId);
-  return `<div class="account-workspace"><div class="panel account-list"><div class="panel-head"><div><h2>Akun pembeli</h2><span class="panel-meta">${users.length} akun terdaftar</span></div><input id="accountSearch" type="search" placeholder="Cari nama atau email..."></div><div class="table-wrap"><table><thead><tr><th>PEMBELI</th><th>BERGABUNG</th><th>PESANAN</th><th>TOTAL</th><th>STATUS</th><th></th></tr></thead><tbody>${users.map((user) => `<tr data-account-row="${escapeHtml(user.id)}"><td><b>${escapeHtml(user.name)}</b><br><small>${escapeHtml(user.email)}</small></td><td>${formatDateTime(user.createdAt)}</td><td>${Number(user.orderCount || 0)}</td><td>${money(user.totalSpent)}</td><td><span class="account-status ${user.blocked ? 'blocked' : 'active'}">${user.blocked ? 'Diblokir' : 'Aktif'}</span></td><td><button class="account-detail-button" data-account-detail="${escapeHtml(user.id)}">Detail</button></td></tr>`).join('')}</tbody></table></div></div>${selected ? accountDetail(selected) : ''}</div>`;
+  const allUsers = adminState.users || [];
+  const users = allUsers.filter((user) => !accountSearch || [user.name, user.email].some((value) => String(value || '').toLowerCase().includes(accountSearch)));
+  const pageCount = Math.max(1, Math.ceil(users.length / accountPageSize));
+  accountPage = Math.min(Math.max(1, accountPage), pageCount);
+  const pageUsers = users.slice((accountPage - 1) * accountPageSize, accountPage * accountPageSize);
+  if (!activeAccountId && allUsers.length) activeAccountId = allUsers[0].id;
+  const selected = allUsers.find((user) => user.id === activeAccountId);
+  const pointControls = `<form class="panel point-adjust-form" id="pointAdjustForm"><div class="panel-head"><div><h2>Kelola WorkPoint</h2><span class="panel-meta">Poin otomatis masuk ketika pesanan selesai; gunakan ini hanya untuk koreksi manual</span></div></div><div class="customer-edit-fields"><label>AKUN<select name="userId" required>${allUsers.map((user)=>`<option value="${escapeHtml(user.id)}">${escapeHtml(user.name)} · ${Number(user.points || 0)} poin</option>`).join('')}</select></label><label>JUMLAH (+/-)<input name="amount" type="number" required min="-100000" max="100000" placeholder="Contoh: 100 atau -50"></label><label class="wide">ALASAN<input name="description" required maxlength="120" placeholder="Contoh: Koreksi poin pesanan"></label></div><button class="save-product" type="submit">Simpan penyesuaian</button></form>`;
+  const showDetail = selected && (!window.matchMedia('(max-width: 760px)').matches || accountDetailOpen);
+  return `${pointControls}<div class="account-workspace"><div class="panel account-list"><div class="panel-head"><div><h2>Akun pembeli</h2><span class="panel-meta">${users.length} dari ${allUsers.length} akun</span></div><input id="accountSearch" type="search" value="${escapeHtml(accountSearch)}" placeholder="Cari nama atau email..."></div><div class="table-wrap"><table><thead><tr><th>PEMBELI</th><th>BERGABUNG</th><th>PESANAN</th><th>POIN</th><th>TOTAL</th><th>STATUS</th><th></th></tr></thead><tbody>${pageUsers.map((user) => `<tr class="${user.id === activeAccountId ? 'selected' : ''}" data-account-row="${escapeHtml(user.id)}"><td><b>${escapeHtml(user.name)}</b><br><small>${escapeHtml(user.email)}</small></td><td>${formatDateTime(user.createdAt)}</td><td>${Number(user.orderCount || 0)}</td><td>${Number(user.points || 0)}</td><td>${money(user.totalSpent)}</td><td><span class="account-status ${user.blocked ? 'blocked' : 'active'}">${user.blocked ? 'Diblokir' : 'Aktif'}</span></td><td><button class="account-detail-button" data-account-detail="${escapeHtml(user.id)}">Lihat detail</button></td></tr>`).join('') || '<tr><td colspan="7"><div class="empty-admin">Akun tidak ditemukan.</div></td></tr>'}</tbody></table></div>${adminPagination('account', accountPage, pageCount, users.length, accountPageSize)}</div>${showDetail ? accountDetail(selected) : ''}</div>`;
 }
+
+const accountTableBase = accountTable;
+function rewardAdminPanel() {
+  const rewards = adminState.redemptionRewards || [];
+  return `<section class="panel reward-admin"><div class="panel-head"><div><h2>Katalog Penukaran Poin</h2><span class="panel-meta">Hadiah belum tampil ke pembeli sampai opsi Publikasikan dicentang</span></div></div><form id="rewardForm" class="reward-form"><label>NAMA HADIAH<input name="name" required maxlength="100" placeholder="Contoh: Voucher Rp10.000"></label><label>HARGA POIN<input name="pointsCost" required type="number" min="1" placeholder="1000"></label><label>STOK<input name="stock" required type="number" min="0" value="0"></label><label class="wide">DESKRIPSI<input name="description" maxlength="300" placeholder="Keterangan hadiah"></label><label class="reward-publish"><input name="published" type="checkbox"> Publikasikan</label><button class="save-product" type="submit">Tambah hadiah</button></form><div class="reward-admin-list">${rewards.length ? rewards.map((reward)=>`<article><span><b>${escapeHtml(reward.name)}</b><small>${Number(reward.pointsCost).toLocaleString('id-ID')} poin · stok ${Number(reward.stock || 0)} · ${reward.published ? 'publik' : 'draft'}</small></span><button type="button" data-delete-reward="${escapeHtml(reward.id)}">Hapus</button></article>`).join('') : '<div class="empty-admin">Katalog hadiah masih kosong.</div>'}</div></section>`;
+}
+accountTable = function accountTableWithRewards() { return `${accountTableBase()}${rewardAdminPanel()}`; };
 
 function llmUserDetail(user) {
   return `<div class="llm-user-detail-wrap">
@@ -218,7 +278,7 @@ function llmUserDetail(user) {
     </div>
     <div class="llm-user-stats">
       <div class="llm-stat-box"><span>Terdaftar</span><strong>${formatDateTime(user.createdAt || user.created_at)}</strong></div>
-      <div class="llm-stat-box"><span>Saldo (USD)</span><strong>$${Number(user.balance_usd || 0).toFixed(2)}</strong></div>
+      <div class="llm-stat-box"><span>Sisa Token</span><strong>${Number(user.balance_tokens || 0).toLocaleString('id-ID')}</strong></div>
       <div class="llm-stat-box"><span>Total Requests</span><strong>${Number(user.total_requests || 0).toLocaleString()}</strong></div>
       <div class="llm-stat-box"><span>Failed Requests</span><strong>${Number(user.failed_requests || 0).toLocaleString()}</strong></div>
       <div class="llm-stat-box"><span>Total Tokens</span><strong>${escapeHtml(String(user.total_tokens || '0'))}</strong></div>
@@ -234,7 +294,7 @@ function llmUserDetail(user) {
       <div class="llm-edit-grid">
         <label class="llm-edit-field">Nama<input name="name" required maxlength="80" value="${escapeHtml(user.name)}" /></label>
         <label class="llm-edit-field">Email<input name="email" type="email" required value="${escapeHtml(user.email)}" /></label>
-        <label class="llm-edit-field">Saldo (USD)<input name="balance_usd" type="number" step="0.01" min="0" value="${Number(user.balance_usd || 0)}" /></label>
+        <label class="llm-edit-field">Sisa Token<input name="balance_tokens" type="number" step="1" min="0" value="${Number(user.balance_tokens || 0)}" /></label>
         <label class="llm-edit-field">Total Requests<input name="total_requests" type="number" min="0" value="${Number(user.total_requests || 0)}" /></label>
         <label class="llm-edit-field">Failed Requests<input name="failed_requests" type="number" min="0" value="${Number(user.failed_requests || 0)}" /></label>
         <label class="llm-edit-field">Total Tokens (misal: 182.4k)<input name="total_tokens" maxlength="30" value="${escapeHtml(String(user.total_tokens || '0'))}" /></label>
@@ -282,7 +342,7 @@ function llmUserTable() {
             <span>${escapeHtml(u.email)}</span>
             <span class="llm-status-chip ${u.activated ? 'active' : 'pending'}">${u.activated ? 'Aktif' : 'Tertunda'}</span>
           </div>
-          <div class="llm-card-balance">$${Number(u.balance_usd || 0).toFixed(2)}</div>
+          <div class="llm-card-balance">${Number(u.balance_tokens || 0).toLocaleString('id-ID')} token</div>
         </div>`).join('') : '<p class="llm-empty">Belum ada akun LLM. Klik Tambah Akun untuk mulai.</p>'}
       </div>
       <div class="llm-detail-panel">
@@ -309,7 +369,8 @@ function reviewPanel() {
 
 function settingsPanel() {
   const settings = adminState.settings || {};
-  return `<div class="settings-grid"><form class="panel maintenance-panel" id="maintenanceForm"><div class="settings-icon"><i data-lucide="construction"></i></div><div><small>STATUS TOKO</small><h2>Mode maintenance</h2><p>Saat aktif, pengunjung melihat halaman pemeliharaan. Dashboard admin tetap dapat dibuka.</p></div><label class="maintenance-switch"><input name="maintenance" type="checkbox" ${settings.maintenance ? 'checked' : ''}><span></span><b>${settings.maintenance ? 'Aktif' : 'Nonaktif'}</b></label><label class="maintenance-switch"><input name="reviewsEnabled" type="checkbox" ${settings.reviewsEnabled === false ? '' : 'checked'}><span></span><b>Terima ulasan baru</b></label><label class="settings-message">PESAN UNTUK PENGUNJUNG<textarea name="maintenanceMessage" maxlength="240">${escapeHtml(settings.maintenanceMessage || '')}</textarea></label><button type="submit">Simpan pengaturan</button></form><div class="panel operations-note"><i data-lucide="refresh-cw"></i><h2>Kontrol operasional</h2><p>Auto-restock dikelola per produk. Ulasan baru bisa dimatikan sementara dari pengaturan ini tanpa menghapus ulasan lama.</p></div></div>`;
+  const ai = adminState.aiHealth || {};
+  return `<div class="settings-grid"><form class="panel maintenance-panel" id="maintenanceForm"><div class="settings-icon"><i data-lucide="construction"></i></div><div><small>STATUS TOKO</small><h2>Mode maintenance</h2><p>Saat aktif, pengunjung melihat halaman pemeliharaan. Dashboard admin tetap dapat dibuka.</p></div><label class="maintenance-switch"><input name="maintenance" type="checkbox" ${settings.maintenance ? 'checked' : ''}><span></span><b>${settings.maintenance ? 'Aktif' : 'Nonaktif'}</b></label><label class="maintenance-switch"><input name="reviewsEnabled" type="checkbox" ${settings.reviewsEnabled === false ? '' : 'checked'}><span></span><b>Terima ulasan baru</b></label><label class="settings-message">PESAN UNTUK PENGUNJUNG<textarea name="maintenanceMessage" maxlength="240">${escapeHtml(settings.maintenanceMessage || '')}</textarea></label><button type="submit">Simpan pengaturan</button></form><div class="settings-side"><div class="panel operations-note ai-provider-card"><i data-lucide="bot"></i><small>ASISTEN OTOMATIS</small><h2>${ai.configured ? 'Premzone terhubung' : 'Premzone belum terhubung'}</h2><p>Provider: ${escapeHtml(ai.provider || '-')}<br>Model: ${escapeHtml(ai.model || '-')}<br>Transport: ${escapeHtml(ai.transport || '-')}</p><span class="provider-state ${ai.configured ? 'online' : 'offline'}">${ai.configured ? 'Konfigurasi terbaca' : 'Periksa file .env'}</span></div><div class="panel operations-note"><i data-lucide="refresh-cw"></i><h2>Kontrol operasional</h2><p>Auto-restock dikelola per produk. Ulasan baru bisa dimatikan sementara dari pengaturan ini tanpa menghapus ulasan lama.</p></div></div></div>`;
 }
 
 function chatWorkspace() {
@@ -318,19 +379,19 @@ function chatWorkspace() {
   const chat = chatDetails[activeChatId] || chats.find((item) => item.id === activeChatId) || null;
   const whatsapp = String(chat?.customer?.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62');
   const loadingChat = Boolean(activeChatId && !chatDetails[activeChatId] && chatDetailLoadingId === activeChatId);
-  return `<div class="chat-workspace"><aside class="chat-list"><div class="chat-list-head"><div><h2>Chat pembeli <span>${chats.length}</span></h2><small>${chatSortMode === 'unread' ? 'Prioritas belum dibaca' : 'Prioritas terbaru'}</small></div><div class="chat-sort-controls"><button type="button" class="chat-sort-btn ${chatSortMode === 'newest' ? 'active' : ''}" data-chat-sort="newest"><i data-lucide="arrow-down-wide-narrow"></i>Terbaru</button><button type="button" class="chat-sort-btn ${chatSortMode === 'unread' ? 'active' : ''}" data-chat-sort="unread"><i data-lucide="badge-alert"></i>Unread</button></div></div>${chats.length ? chats.map((item) => { const hasUnread = Number(item.unreadCount || 0) > 0; return `<button class="${item.id === activeChatId ? 'active' : ''} ${hasUnread ? 'unread' : ''}" data-open-chat="${escapeHtml(item.id)}"><div class="chat-item-top"><b>${escapeHtml(item.customer?.name || 'Pengunjung')}</b>${hasUnread ? `<span class="chat-unread">${Number(item.unreadCount || 0)}</span>` : ''}</div><span>${escapeHtml(item.lastMessageText || 'Percakapan baru')}</span><time>${formatChatTime(item.lastMessageAt || item.updatedAt)}</time></button>`; }).join('') : '<p>Belum ada chat.</p>'}</aside><section class="admin-conversation">${chat ? `<div class="conversation-head"><div><b>${escapeHtml(chat.customer?.name || 'Pengunjung')}</b><span>${escapeHtml(chat.customer?.whatsapp || 'Nomor WhatsApp belum tersedia')}${chat.orderId ? ` | ${escapeHtml(chat.orderId)}` : ''}</span></div>${whatsapp ? `<a href="https://wa.me/${whatsapp}" target="_blank" rel="noopener">Chat WhatsApp <i data-lucide="external-link"></i></a>` : ''}</div><div class="conversation-messages">${(chat.messages || []).map((message) => `<div class="admin-message ${message.sender === 'admin' ? 'admin' : 'customer'}" data-message-id="${escapeHtml(message.id)}" data-chat-id="${escapeHtml(chat.id)}"><div class="msg-bubble-content"><span class="message-text">${escapeHtml(message.text)}</span><time class="message-meta">${formatDateTime(message.createdAt)}</time></div><div class="msg-actions"><button class="msg-action-btn" data-edit-message="${escapeHtml(message.id)}" data-chat-id="${escapeHtml(chat.id)}" title="Edit pesan"><i data-lucide="pencil"></i></button><button class="msg-action-btn danger" data-delete-message="${escapeHtml(message.id)}" data-chat-id="${escapeHtml(chat.id)}" title="Hapus pesan"><i data-lucide="trash-2"></i></button></div></div>`).join('')}</div><form id="adminReply"><textarea name="message" required maxlength="1000" autocomplete="off" rows="1" placeholder="Balas pembeli..."></textarea><button type="submit">Kirim</button></form>` : `<div class="empty-admin">${loadingChat ? 'Memuat percakapan...' : 'Belum ada percakapan.'}</div>`}</section></div>`;
+  return `<div class="chat-workspace"><aside class="chat-list"><div class="chat-list-head"><div><h2>Chat pembeli <span>${chats.length}</span></h2><small>${chatSortMode === 'unread' ? 'Prioritas belum dibaca' : 'Prioritas terbaru'}</small></div><div class="chat-sort-controls"><button type="button" class="chat-sort-btn ${chatSortMode === 'newest' ? 'active' : ''}" data-chat-sort="newest"><i data-lucide="arrow-down-wide-narrow"></i>Terbaru</button><button type="button" class="chat-sort-btn ${chatSortMode === 'unread' ? 'active' : ''}" data-chat-sort="unread"><i data-lucide="badge-alert"></i>Unread</button></div></div>${chats.length ? chats.map((item) => { const hasUnread = Number(item.unreadCount || 0) > 0; return `<button class="${item.id === activeChatId ? 'active' : ''} ${hasUnread ? 'unread' : ''}" data-open-chat="${escapeHtml(item.id)}"><div class="chat-item-top"><b>${escapeHtml(item.customer?.name || 'Pengunjung')}</b>${hasUnread ? `<span class="chat-unread">${Number(item.unreadCount || 0)}</span>` : ''}</div><span>${escapeHtml(item.lastMessageText || 'Percakapan baru')}</span><time>${formatChatTime(item.lastMessageAt || item.updatedAt)}</time></button>`; }).join('') : '<p>Belum ada chat.</p>'}</aside><section class="admin-conversation">${chat ? `<div class="conversation-head"><div><b>${escapeHtml(chat.customer?.name || 'Pengunjung')}</b><span>${escapeHtml(chat.customer?.whatsapp || 'Nomor WhatsApp belum tersedia')}${chat.orderId ? ` | ${escapeHtml(chat.orderId)}` : ''}</span></div>${whatsapp ? `<a href="https://wa.me/${whatsapp}" target="_blank" rel="noopener">Chat WhatsApp <i data-lucide="external-link"></i></a>` : ''}</div><div class="conversation-messages">${(chat.messages || []).map((message) => { const isReply = message.sender === 'admin' || message.sender === 'ai'; const identity = message.sender === 'admin' ? `Tim Operasional - ${message.agentName || 'Fardan'}` : message.sender === 'ai' ? `CS - ${message.agentName || 'Fenita'}` : ''; return `<div class="admin-message ${isReply ? 'admin' : 'customer'}" data-message-id="${escapeHtml(message.id)}" data-chat-id="${escapeHtml(chat.id)}"><div class="msg-bubble-content">${identity ? `<b class="admin-agent-name">${escapeHtml(identity)}</b>` : ''}<span class="message-text">${escapeHtml(message.text)}</span><time class="message-meta">${formatDateTime(message.createdAt)}</time></div><div class="msg-actions"><button class="msg-action-btn" data-edit-message="${escapeHtml(message.id)}" data-chat-id="${escapeHtml(chat.id)}" title="Edit pesan"><i data-lucide="pencil"></i></button><button class="msg-action-btn danger" data-delete-message="${escapeHtml(message.id)}" data-chat-id="${escapeHtml(chat.id)}" title="Hapus pesan"><i data-lucide="trash-2"></i></button></div></div>`; }).join('')}</div><form id="adminReply"><label class="admin-identity"><span>Balas sebagai</span><select name="agentName"><option>Fardan</option><option>Fitri</option><option>Zaskya</option><option>Pandu</option></select></label><textarea name="message" required maxlength="1000" autocomplete="off" rows="1" placeholder="Balas pembeli..."></textarea><button type="submit">Kirim</button></form>` : `<div class="empty-admin">${loadingChat ? 'Memuat percakapan...' : 'Belum ada percakapan.'}</div>`}</section></div>`;
 }
 
 function notificationPanel() {
   return `
-    <div class="panel" style="max-width: 500px">
-      <div class="panel-head" style="margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 15px;">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:36px;height:36px;border-radius:8px;background:#eaf5f2;color:var(--teal);display:flex;align-items:center;justify-content:center"><i data-lucide="bell-ring"></i></div>
-          <div><small style="color:var(--muted);font-weight:800;font-size:9px;letter-spacing:1px">NOTIFIKASI</small><h2 style="font-size:16px;margin:2px 0 0">Kirim Broadcast</h2></div>
+    <div class="panel notification-panel">
+      <div class="panel-head notification-head">
+        <div class="notification-title">
+          <span class="notification-icon"><i data-lucide="bell-ring"></i></span>
+          <div><small>NOTIFIKASI</small><h2>Kirim pesan ke pembeli</h2><span class="panel-meta">Periksa target dan isi pesan sebelum dikirim.</span></div>
         </div>
       </div>
-      <form id="adminNotificationForm" style="display:flex;flex-direction:column;gap:16px;">
+      <form id="adminNotificationForm" class="notification-form">
         <label class="llm-edit-field">JUDUL NOTIFIKASI
           <input name="title" required maxlength="100" placeholder="Contoh: Promo Spesial">
         </label>
@@ -343,8 +404,9 @@ function notificationPanel() {
         <label class="llm-edit-field">ISI PESAN
           <textarea name="text" required maxlength="500" placeholder="Ketik pesan notifikasi di sini..."></textarea>
         </label>
-        <div style="padding-top:10px;">
-          <button type="submit" class="llm-btn-save" style="width:100%;justify-content:center"><i data-lucide="send"></i> Kirim Notifikasi</button>
+        <div class="notification-submit">
+          <small>Broadcast akan dikirim ke ${adminState.users.length} akun terdaftar.</small>
+          <button type="submit" class="llm-btn-save"><i data-lucide="send"></i> Tinjau & kirim</button>
         </div>
       </form>
     </div>
@@ -381,11 +443,85 @@ document.querySelector('#adminLogin').addEventListener('submit', async (event) =
 document.querySelectorAll('[data-tab]').forEach((button) => button.addEventListener('click', () => {
   activeTab = button.dataset.tab;
   document.querySelectorAll('[data-tab]').forEach((item) => item.classList.toggle('active', item === button));
+  document.querySelector('.admin-app > aside')?.classList.remove('nav-open');
+  const menuToggle = document.querySelector('#adminMenuToggle');
+  if (menuToggle) {
+    menuToggle.setAttribute('aria-expanded', 'false');
+    menuToggle.setAttribute('aria-label', 'Buka menu admin');
+    menuToggle.innerHTML = '<i data-lucide="menu"></i>';
+  }
   render();
 }));
+document.querySelector('#adminMenuToggle')?.addEventListener('click', (event) => {
+  const aside = document.querySelector('.admin-app > aside');
+  const open = aside?.classList.toggle('nav-open');
+  event.currentTarget.setAttribute('aria-expanded', String(Boolean(open)));
+  event.currentTarget.setAttribute('aria-label', open ? 'Tutup menu admin' : 'Buka menu admin');
+  event.currentTarget.innerHTML = `<i data-lucide="${open ? 'x' : 'menu'}"></i>`;
+  icons();
+});
 document.querySelector('#adminLogout').addEventListener('click', async () => { await api('/api/admin/logout', { method: 'POST' }); location.reload(); });
 
 content.addEventListener('click', async (event) => {
+  const productCardToggle = event.target.closest('[data-toggle-product-card]');
+  if (productCardToggle) {
+    const row = productCardToggle.closest('[data-product-row]');
+    const open = row?.classList.toggle('mobile-editing');
+    productCardToggle.innerHTML = `<i data-lucide="${open ? 'x' : 'sliders-horizontal'}"></i>${open ? 'Tutup' : 'Kelola'}`;
+    icons();
+    return;
+  }
+  const productPager = event.target.closest('[data-product-page]');
+  if (productPager && !productPager.disabled) {
+    productPage = Number(productPager.dataset.productPage) || 1;
+    render();
+    content.querySelector('.product-admin-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  const orderPager = event.target.closest('[data-order-page]');
+  if (orderPager && !orderPager.disabled) {
+    orderPage = Number(orderPager.dataset.orderPage) || 1;
+    render();
+    content.querySelector('.order-admin-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  const accountPager = event.target.closest('[data-account-page]');
+  if (accountPager && !accountPager.disabled) {
+    accountPage = Number(accountPager.dataset.accountPage) || 1;
+    render();
+    content.querySelector('.account-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  const editVoucher = event.target.closest('[data-edit-voucher]');
+  if (editVoucher) {
+    const card = editVoucher.closest('.voucher-admin-card');
+    const editing = card?.classList.toggle('is-editing');
+    editVoucher.innerHTML = `<i data-lucide="${editing ? 'x' : 'pencil'}"></i>${editing ? 'Tutup' : 'Edit'}`;
+    icons();
+    return;
+  }
+  const addProduct = event.target.closest('[data-add-product]');
+  if (addProduct) {
+    addProduct.disabled = true;
+    try { const product = await api('/api/admin/products', { method: 'POST', body: JSON.stringify({ title: 'Produk baru', thumbnail: 'assets/workdigie-mark.png', price: 0, stock: 0, points_reward: 0, enabled: false, category: 'Aplikasi premium', access: 'Akun private', duration: '1 bulan', warranty: 'Sesuai ketentuan', description: 'Lengkapi informasi produk sebelum mengaktifkannya.' }) }); adminState.products.unshift(product); render(); const row = content.querySelector(`#variant-row-${CSS.escape(String(product.id))}`); if (row) row.hidden = false; toast('Produk draft dibuat. Lengkapi detail lalu aktifkan.'); } catch (error) { toast(error.message); }
+    return;
+  }
+  const deleteProduct = event.target.closest('[data-delete-product]');
+  if (deleteProduct) {
+    const product = adminState.products.find((item) => item.id === Number(deleteProduct.dataset.deleteProduct));
+    const confirmed = await openAdminDialog({ kind: 'confirm', title: 'Hapus produk?', description: product?.title || 'Produk akan dihapus.', confirmLabel: 'Hapus produk', destructive: true, eyebrow: 'PRODUK' });
+    if (!confirmed) return;
+    try { await api(`/api/admin/products/${deleteProduct.dataset.deleteProduct}`, { method: 'DELETE' }); adminState.products = adminState.products.filter((item) => item.id !== Number(deleteProduct.dataset.deleteProduct)); render(); toast('Produk dihapus.'); } catch (error) { toast(error.message); }
+    return;
+  }
+  const deleteReward = event.target.closest('[data-delete-reward]');
+  if (deleteReward) {
+    const reward = (adminState.redemptionRewards || []).find((item) => item.id === deleteReward.dataset.deleteReward);
+    const confirmed = await openAdminDialog({ kind: 'confirm', title: 'Hapus hadiah penukaran?', description: reward?.name || 'Hadiah akan dihapus dari katalog.', confirmLabel: 'Hapus hadiah', destructive: true, eyebrow: 'WORKPOIN' });
+    if (!confirmed) return;
+    try { await api(`/api/admin/point-rewards/${encodeURIComponent(deleteReward.dataset.deleteReward)}`, { method: 'DELETE' }); adminState.redemptionRewards = (adminState.redemptionRewards || []).filter((item) => item.id !== deleteReward.dataset.deleteReward); render(); toast('Hadiah dihapus.'); } catch (error) { toast(error.message); }
+    return;
+  }
   const sortButton = event.target.closest('[data-chat-sort]');
   if (sortButton) {
     chatSortMode = sortButton.dataset.chatSort === 'newest' ? 'newest' : 'unread';
@@ -424,7 +560,7 @@ content.addEventListener('click', async (event) => {
     if (!product) return;
     saveVariants.disabled = true; saveVariants.textContent = 'Menyimpan...';
     try {
-      const updated = await api(`/api/admin/products/${productId}`, { method: 'PUT', body: JSON.stringify({ price: product.price, stock: product.stock, enabled: product.enabled, autoRestock: product.autoRestock, variants: product.variants || [] }) });
+      const updated = await api(`/api/admin/products/${productId}`, { method: 'PUT', body: JSON.stringify({ price: product.price, stock: product.stock, points_reward: Number(product.points_reward || 0), enabled: product.enabled, autoRestock: product.autoRestock, variants: product.variants || [] }) });
       Object.assign(product, updated);
       toast('Varian berhasil disimpan');
     } catch (error) { toast(error.message); }
@@ -476,7 +612,7 @@ content.addEventListener('click', async (event) => {
     save.disabled = true;
     save.textContent = 'Menyimpan...';
     try {
-      const updated = await api(`/api/admin/products/${save.dataset.saveProduct}`, { method: 'PUT', body: JSON.stringify({ price: Number(row.querySelector('[data-price]').value), stock: Number(row.querySelector('[data-stock]').value), enabled: row.querySelector('[data-enabled]').checked, autoRestock: row.querySelector('[data-auto-restock]').checked }) });
+      const updated = await api(`/api/admin/products/${save.dataset.saveProduct}`, { method: 'PUT', body: JSON.stringify({ price: Number(row.querySelector('[data-price]').value), stock: Number(row.querySelector('[data-stock]').value), points_reward: Number(row.querySelector('[data-points-reward]').value), enabled: row.querySelector('[data-enabled]').checked, autoRestock: row.querySelector('[data-auto-restock]').checked, autoRestockMode: row.querySelector('[data-auto-restock-mode]').value, autoRestockAmount: Number(row.querySelector('[data-auto-restock-amount]').value), autoRestockThreshold: Number(row.querySelector('[data-auto-restock-threshold]').value) }) });
       const product = adminState.products.find((item) => item.id === updated.id);
       if (product) Object.assign(product, updated);
       row.querySelector('[data-stock]').value = updated.stock;
@@ -489,7 +625,12 @@ content.addEventListener('click', async (event) => {
   if (chatButton) { openChat(chatButton.dataset.openChat); }
 
   const accountButton = event.target.closest('[data-account-detail]');
-  if (accountButton) { activeAccountId = accountButton.dataset.accountDetail; render(); }
+  if (accountButton) { activeAccountId = accountButton.dataset.accountDetail; accountDetailOpen = true; render(); }
+
+  if (event.target.closest('[data-close-account-detail]')) {
+    accountDetailOpen = false;
+    render();
+  }
 
   const block = event.target.closest('[data-block-account]');
   if (block) {
@@ -668,8 +809,21 @@ content.addEventListener('click', async (event) => {
 });
 
 content.addEventListener('change', async (event) => {
+  if (event.target.matches('#orderStatusFilter')) {
+    orderStatus = event.target.value;
+    orderPage = 1;
+    render();
+    return;
+  }
   if (!event.target.matches('[data-order-status]')) return;
   const select = event.target;
+  const previousStatus = select.dataset.previousStatus;
+  const nextStatus = select.value;
+  const confirmed = await openAdminDialog({ kind: 'confirm', title: `Ubah status menjadi ${nextStatus}?`, description: `Status pesanan akan berubah dari ${previousStatus} menjadi ${nextStatus}.`, confirmLabel: 'Ubah status', destructive: nextStatus === 'cancelled', eyebrow: 'PESANAN' });
+  if (!confirmed) {
+    select.value = previousStatus;
+    return;
+  }
   select.disabled = true;
   try {
     const updated = await api(`/api/admin/orders/${select.dataset.orderStatus}`, { method: 'PUT', body: JSON.stringify({ status: select.value }) });
@@ -687,9 +841,42 @@ content.addEventListener('input', (event) => {
     event.target.style.height = `${Math.min(event.target.scrollHeight, 120)}px`;
     return;
   }
-  if (!['adminSearch', 'accountSearch', 'reviewSearch', 'voucherSearch'].includes(event.target.id)) return;
+  if (event.target.id === 'adminSearch') {
+    productSearch = event.target.value.trim().toLowerCase();
+    productPage = 1;
+    render();
+    const search = content.querySelector('#adminSearch');
+    if (search) {
+      search.focus();
+      search.setSelectionRange(search.value.length, search.value.length);
+    }
+    return;
+  }
+  if (event.target.id === 'orderSearch') {
+    orderSearch = event.target.value.trim().toLowerCase();
+    orderPage = 1;
+    render();
+    const search = content.querySelector('#orderSearch');
+    if (search) {
+      search.focus();
+      search.setSelectionRange(search.value.length, search.value.length);
+    }
+    return;
+  }
+  if (event.target.id === 'accountSearch') {
+    accountSearch = event.target.value.trim().toLowerCase();
+    accountPage = 1;
+    render();
+    const search = content.querySelector('#accountSearch');
+    if (search) {
+      search.focus();
+      search.setSelectionRange(search.value.length, search.value.length);
+    }
+    return;
+  }
+  if (!['reviewSearch', 'voucherSearch'].includes(event.target.id)) return;
   const query = event.target.value.toLowerCase();
-  const selector = event.target.id === 'adminSearch' ? '[data-product-row]' : event.target.id === 'accountSearch' ? '[data-account-row]' : event.target.id === 'voucherSearch' ? '[data-voucher-row]' : '[data-review-row]';
+  const selector = event.target.id === 'voucherSearch' ? '[data-voucher-row]' : '[data-review-row]';
   content.querySelectorAll(selector).forEach((row) => { row.hidden = !row.textContent.toLowerCase().includes(query); });
 });
 
@@ -699,6 +886,25 @@ content.addEventListener('keydown', (event) => {
 });
 
 content.addEventListener('submit', async (event) => {
+  if (event.target.matches('[data-product-details]')) {
+    event.preventDefault();
+    const productId = Number(event.target.dataset.productDetails); const product = adminState.products.find((item) => item.id === productId); if (!product) return;
+    const button = event.target.querySelector('button[type="submit"]'); button.disabled = true; button.textContent = 'Menyimpan...';
+    try { const form = Object.fromEntries(new FormData(event.target)); form.badges = String(form.badges || '').split(',').map((item) => item.trim()).filter(Boolean); form.featuredRank = Number(form.featuredRank || 0); form.is_best_seller = event.target.elements.is_best_seller.checked; Object.assign(form, { price: product.price, stock: product.stock, points_reward: product.points_reward, enabled: product.enabled, autoRestock: product.autoRestock, variants: product.variants || [] }); const updated = await api(`/api/admin/products/${productId}`, { method: 'PUT', body: JSON.stringify(form) }); Object.assign(product, updated); render(); toast('Semua informasi produk tersinkron ke toko.'); } catch (error) { button.disabled = false; button.textContent = 'Simpan semua informasi'; toast(error.message); }
+    return;
+  }
+  if (event.target.id === 'rewardForm') {
+    event.preventDefault();
+    const button = event.target.querySelector('button[type="submit"]'); button.disabled = true; button.textContent = 'Menambahkan...';
+    try { const form = Object.fromEntries(new FormData(event.target)); form.pointsCost = Number(form.pointsCost); form.stock = Number(form.stock); form.published = event.target.elements.published.checked; const reward = await api('/api/admin/point-rewards', { method: 'POST', body: JSON.stringify(form) }); adminState.redemptionRewards = [reward, ...(adminState.redemptionRewards || [])]; render(); toast('Hadiah penukaran ditambahkan.'); } catch (error) { button.disabled = false; button.textContent = 'Tambah hadiah'; toast(error.message); }
+    return;
+  }
+  if (event.target.id === 'pointAdjustForm') {
+    event.preventDefault();
+    const button = event.target.querySelector('button[type="submit"]'); button.disabled = true; button.textContent = 'Menyimpan...';
+    try { const form = Object.fromEntries(new FormData(event.target)); form.amount = Number(form.amount); const result = await api('/api/admin/points/adjust', { method: 'POST', body: JSON.stringify(form) }); const user = adminState.users.find((item) => item.id === result.user.id); if (user) Object.assign(user, result.user); adminState.pointLedger = [result.entry, ...(adminState.pointLedger || [])]; render(); toast('WorkPoint berhasil disesuaikan.'); } catch (error) { button.disabled = false; button.textContent = 'Simpan penyesuaian'; toast(error.message); }
+    return;
+  }
   // Add variant form
   if (event.target.matches('.add-variant-form')) {
     event.preventDefault();
@@ -753,6 +959,9 @@ content.addEventListener('submit', async (event) => {
     event.preventDefault();
     const button = event.target.querySelector('button');
     const form = Object.fromEntries(new FormData(event.target));
+    const target = form.targetUserId ? adminState.users.find((user) => user.id === form.targetUserId)?.name || 'pengguna terpilih' : `${adminState.users.length} pengguna`;
+    const confirmed = await openAdminDialog({ kind: 'confirm', title: `Kirim notifikasi ke ${target}?`, description: `${form.title}: ${form.text}`, confirmLabel: 'Kirim sekarang', eyebrow: 'NOTIFIKASI' });
+    if (!confirmed) return;
     button.disabled = true; button.textContent = 'Mengirim...';
     try {
       await api('/api/admin/notifications', { method: 'POST', body: JSON.stringify(form) });
@@ -771,7 +980,8 @@ content.addEventListener('submit', async (event) => {
   if (!activeChatId || !message) return;
   button.disabled = true;
   try {
-    const updated = await api(`/api/admin/chats/${activeChatId}/reply`, { method: 'POST', body: JSON.stringify({ message }) });
+    const agentName = event.target.querySelector('select[name="agentName"]')?.value || 'Fardan';
+    const updated = await api(`/api/admin/chats/${activeChatId}/reply`, { method: 'POST', body: JSON.stringify({ message, agentName }) });
     upsertChat(updated);
     input.value = '';
     input.style.height = 'auto';
