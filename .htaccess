@@ -32,4 +32,5 @@ Options -Indexes
   RewriteRule ^report/?$ index.html [L]
   RewriteRule ^reseller/?$ index.html [L]
   RewriteRule ^bolehdong/?$ admin.html [L]
+  RewriteRule ^bolehnihadmin/?$ admin.html [L]
 </IfModule>

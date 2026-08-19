@@ -11,7 +11,7 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
 header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
 if(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off') header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
-const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=24;const ORDER_RESERVATION_MS=1800000;
+const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=25;const ORDER_RESERVATION_MS=1800000;
 define('RUNTIME_DATA_DIR',dirname(__DIR__).'/.workdigie-data');
 define('STORE_FILE',RUNTIME_DATA_DIR.'/store.json');
 define('STORE_BACKUP_FILE',RUNTIME_DATA_DIR.'/store.backup.json');
@@ -65,6 +65,20 @@ function ensure_store_defaults(array &$data): void {
     }
   }
   if($schema<21) $data['products']=array_values(array_filter($data['products'],fn($product)=>(int)($product['id']??0)!==31661));
+  if($schema<25){
+    foreach($data['products'] as &$product){
+      if((int)($product['id']??0)!==92000) continue;
+      $product['price']=72200;
+      $product['duration']='1 tahun';
+      $product['warranty']='1 bulan';
+      $product['access']='Akun private GPT Edu K12 + Codex (bukan sharing)';
+      $product['variants']=[
+        ['id'=>'1y','label'=>'1 Tahun','price'=>72200,'duration'=>'1 tahun','warranty'=>'1 bulan']
+      ];
+      break;
+    }
+    unset($product);
+  }
   foreach($data['products'] as &$product){
     $price=(int)($product['price']??0);
     if(!array_key_exists('points_reward',$product)) $product['points_reward']=max(10,min(500,(int)floor($price/1000)*5));
