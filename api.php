@@ -11,7 +11,7 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
 header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
 if(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off') header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
-const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=25;const ORDER_RESERVATION_MS=1800000;
+const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=26;const ORDER_RESERVATION_MS=1800000;
 define('RUNTIME_DATA_DIR',dirname(__DIR__).'/.workdigie-data');
 define('STORE_FILE',RUNTIME_DATA_DIR.'/store.json');
 define('STORE_BACKUP_FILE',RUNTIME_DATA_DIR.'/store.backup.json');
@@ -78,6 +78,37 @@ function ensure_store_defaults(array &$data): void {
       break;
     }
     unset($product);
+  }
+  if($schema<26){
+    foreach($data['orders'] as &$order){
+      $status=(string)($order['status']??'pending');
+      if(in_array($status,['paid','completed'],true)) continue;
+      if(!is_array($order['items']??null)) continue;
+      $changed=false;
+      $oldSubtotal=max(0,(int)($order['subtotal']??0));
+      foreach($order['items'] as &$line){
+        $isGptEdu=(int)($line['id']??0)===92000 || preg_match('/GPT\s*EDU\s*K12/i',(string)($line['title']??''))===1;
+        if(!$isGptEdu) continue;
+        $qty=max(1,(int)($line['quantity']??1));
+        $line['price']=72200;
+        $line['lineTotal']=72200*$qty;
+        if(empty($line['variantId'])) $line['variantId']='1y';
+        $changed=true;
+      }
+      unset($line);
+      if(!$changed) continue;
+      $newSubtotal=0;
+      foreach(($order['items']??[]) as $line) $newSubtotal+=max(0,(int)($line['lineTotal']??((int)($line['price']??0)*max(1,(int)($line['quantity']??1)))));
+      $oldDiscount=max(0,(int)($order['discount']??0));
+      $newDiscount=$oldSubtotal>0 && $oldDiscount>0 ? min($newSubtotal,(int)floor($newSubtotal*$oldDiscount/$oldSubtotal)) : 0;
+      $order['subtotal']=$newSubtotal;
+      $order['discount']=$newDiscount;
+      if(is_array($order['voucher']??null)) $order['voucher']['discount']=$newDiscount;
+      $order['total']=max(0,$newSubtotal-$newDiscount)+max(0,(int)($order['adminFee']??0));
+      $order['updatedAt']=now_iso();
+      $order['priceMigration']='gpt-edu-72200';
+    }
+    unset($order);
   }
   foreach($data['products'] as &$product){
     $price=(int)($product['price']??0);
