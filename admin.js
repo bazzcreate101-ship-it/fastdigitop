@@ -161,7 +161,15 @@ document.addEventListener('keydown', (event) => {
 });
 
 async function api(url, options = {}) {
-  const response = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', 'X-WorkDigie-Request': '1', ...(options.headers || {}) } });
+  const requestedMethod = String(options.method || 'GET').toUpperCase();
+  const transportOptions = { ...options };
+  const headers = { 'Content-Type': 'application/json', 'X-WorkDigie-Request': '1', ...(options.headers || {}) };
+  if (['PUT', 'DELETE', 'PATCH'].includes(requestedMethod)) {
+    transportOptions.method = 'POST';
+    headers['X-HTTP-Method-Override'] = requestedMethod;
+    headers['X-WorkDigie-Method'] = requestedMethod;
+  }
+  const response = await fetch(url, { ...transportOptions, headers });
   const raw = await response.text();
   let data = {};
   try { data = raw ? JSON.parse(raw) : {}; } catch { data = { error: raw.replace(/\s+/g, ' ').trim().slice(0, 180) }; }
@@ -1061,5 +1069,4 @@ setInterval(async () => {
 
 load();
 icons();
-
 
