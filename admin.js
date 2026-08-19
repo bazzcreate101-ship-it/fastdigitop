@@ -162,8 +162,14 @@ document.addEventListener('keydown', (event) => {
 
 async function api(url, options = {}) {
   const response = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', 'X-WorkDigie-Request': '1', ...(options.headers || {}) } });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) { if (response.status === 401 && url !== '/api/admin/login') showLogin(); throw new Error(data.error || 'Terjadi kesalahan'); }
+  const raw = await response.text();
+  let data = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch { data = { error: raw.replace(/\s+/g, ' ').trim().slice(0, 180) }; }
+  if (!response.ok) {
+    if (response.status === 401 && url !== '/api/admin/login') showLogin();
+    const message = data.error || response.statusText || 'Terjadi kesalahan';
+    throw new Error(`${message} (HTTP ${response.status})`);
+  }
   return data;
 }
 
@@ -1055,6 +1061,5 @@ setInterval(async () => {
 
 load();
 icons();
-
 
 
