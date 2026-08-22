@@ -18,7 +18,7 @@ set_exception_handler(function(Throwable $e): void { emergency_json_error('Terja
 register_shutdown_function(function(): void { $error=error_get_last(); if(!$error||!in_array($error['type']??0,[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR],true)) return; emergency_json_error('Terjadi kesalahan fatal server. Coba ulangi sebentar lagi.',($error['message']??'').' in '.($error['file']??'').':'.($error['line']??'')); });
 $requestPathForHeaders=parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 if(str_starts_with($requestPathForHeaders,'/api/')){ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0'); header('Pragma: no-cache'); header('X-Robots-Tag: noindex, nofollow, noarchive'); }
-const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=26;const ORDER_RESERVATION_MS=1800000;
+const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=27;const ORDER_RESERVATION_MS=1800000;
 define('RUNTIME_DATA_DIR',dirname(__DIR__).'/.workdigie-data');
 define('STORE_FILE',RUNTIME_DATA_DIR.'/store.json');
 define('STORE_BACKUP_FILE',RUNTIME_DATA_DIR.'/store.backup.json');
@@ -44,7 +44,8 @@ function default_store(): array { $data=['schemaVersion'=>STORE_SCHEMA_VERSION,'
 function ensure_store_defaults(array &$data): void {
   $schema=(int)($data['schemaVersion']??0);
   $seed=is_file(SEED_FILE)?json_decode((string)file_get_contents(SEED_FILE),true):null;
-  if(empty($data['products'])){
+  $productsWereEmpty=empty($data['products']);
+  if($productsWereEmpty){
     $data['products']=is_array($seed['products']??null)?$seed['products']:[];
   } elseif($schema<19 && is_array($seed['products']??null)) {
     $canonical=[];
@@ -117,6 +118,52 @@ function ensure_store_defaults(array &$data): void {
       $order['priceMigration']='gpt-edu-72200';
     }
     unset($order);
+  }
+  if($schema<27 || $productsWereEmpty){
+    $meituIcon='https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/94/8c/2f/948c2f51-68e3-f083-e97e-41ad21f4685d/AppIcon-0-0-1x_U007emarketing-0-9-0-85-220.png/512x512bb.jpg';
+    $meituProduct=[
+      'id'=>94000,
+      'is_best_seller'=>false,
+      'title'=>'MEITU PREMIUM',
+      'cashback_amount'=>0,
+      'cashback_type'=>'amount',
+      'thumbnail'=>$meituIcon,
+      'price'=>38000,
+      'available_stock'=>20,
+      'stock'=>20,
+      'total_stock'=>20,
+      'enabled'=>true,
+      'autoRestock'=>false,
+      'autoRestockMode'=>'fixed',
+      'autoRestockAmount'=>8,
+      'autoRestockThreshold'=>1,
+      'featuredRank'=>7,
+      'category'=>'Aplikasi',
+      'access'=>'Akun private Meitu Premium',
+      'duration'=>'1 bulan',
+      'warranty'=>'Full garansi',
+      'badges'=>['Private','Full Garansi','Edit Foto & Video'],
+      'description'=>'Meitu Premium adalah aplikasi edit foto dan video untuk kebutuhan selfie, konten sosial media, katalog online shop, dan editing cepat dari HP. Fiturnya mencakup photo editor, video editor, filter, template, retouch wajah, beautify, makeup, body shape, collage, sticker, text, frame, remover objek berbasis AI, AI art/effects, dan material VIP seperti filter, efek, AR camera, makeup, serta template eksklusif. Produk WorkDigie ini akun private, bukan sharing, dengan full garansi selama masa aktif. Varian tersedia 1 bulan Rp38.000 dan 2 bulan Rp59.000.',
+      'variants'=>[
+        ['id'=>'1m','label'=>'1 Bulan','price'=>38000,'duration'=>'1 bulan','warranty'=>'Full garansi'],
+        ['id'=>'2m','label'=>'2 Bulan','price'=>59000,'duration'=>'2 bulan','warranty'=>'Full garansi']
+      ]
+    ];
+    $updatedMeitu=false;
+    foreach($data['products'] as &$product){
+      $isMeitu=(int)($product['id']??0)===94000 || preg_match('/\bmeitu\b/i',(string)($product['title']??''))===1;
+      if(!$isMeitu) continue;
+      $currentStock=product_stock($product);
+      $currentSold=(int)($product['sold']??0);
+      $product=array_merge($product,$meituProduct);
+      set_product_stock($product,$currentStock>0?$currentStock:20);
+      $product['total_stock']=max((int)($product['total_stock']??20),product_stock($product));
+      $product['sold']=$currentSold;
+      $updatedMeitu=true;
+      break;
+    }
+    unset($product);
+    if(!$updatedMeitu) array_unshift($data['products'],$meituProduct);
   }
   foreach($data['products'] as &$product){
     $price=(int)($product['price']??0);
@@ -361,7 +408,7 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
     if(!$needsFullCatalog&&!$needsDetail) continue;
     $entry=['id'=>(int)($product['id']??0),'name'=>$product['title']??'','price'=>(int)($product['price']??0),'stock'=>product_stock($product),'category'=>product_category($product),'badges'=>$product['badges']??[],'access'=>$product['access']??'','duration'=>$product['duration']??'','warranty'=>$product['warranty']??'','points'=>(int)($product['points_reward']??0)];
     if($needsDetail){
-      $entry['description']=mb_substr(trim((string)($product['description']??'')),0,180);
+      $entry['description']=mb_substr(trim((string)($product['description']??'')),0,420);
       $entry['variants']=[]; foreach(array_slice(is_array($product['variants']??null)?$product['variants']:[],0,6) as $variant)$entry['variants'][]=['label'=>$variant['label']??$variant['name']??'','price'=>(int)($variant['price']??0),'duration'=>$variant['duration']??'','warranty'=>$variant['warranty']??''];
     }
     $catalog[]=$entry;
@@ -378,7 +425,7 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
     }
     usort($matches,fn($a,$b)=>$b['score']<=>$a['score']);
     if($matches){
-      $lines=[]; foreach(array_slice($matches,0,5) as $match){ $p=$match['product']; $stock=product_stock($p); $price=(int)($p['price']??product_base_price($p)); $lines[]=($p['title']??'Produk').' '.rupiah_text($price).' • stok '.$stock; }
+      $lines=[]; foreach(array_slice($matches,0,5) as $match){ $p=$match['product']; $stock=product_stock($p); $price=(int)($p['price']??product_base_price($p)); $variantText=''; $variants=is_array($p['variants']??null)?$p['variants']:[]; if($variants&&(count($matches)===1||preg_match('/varian|durasi|\b[0-9]+\s*(bulan|bln|tahun|thn)\b/iu',$queryText))){$variantParts=[]; foreach(array_slice($variants,0,4) as $variant){$label=trim((string)($variant['label']??$variant['name']??'')); $variantPrice=(int)($variant['price']??0); if($label!==''&&$variantPrice>0)$variantParts[]=$label.' '.rupiah_text($variantPrice);} if($variantParts)$variantText=' • varian: '.implode(', ',$variantParts);} $lines[]=($p['title']??'Produk').' '.rupiah_text($price).$variantText.' • stok '.$stock; }
       $suffix=count($matches)>5?' Ada '.count($matches).' produk terkait, Fenita tampilkan yang paling dekat dulu ya.':'';
       json_response(['answer'=>implode("\n",$lines).$suffix,'escalate'=>false,'reason'=>'local_catalog'],200);
     }
@@ -394,6 +441,7 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
     'payment'=>['qris'=>'QRIS selalu aktif dan wajib dibayar sesuai nominal tagihan.','other'=>'Indomaret, virtual account, dan e-wallet bergantung pada kondisi server.','verification'=>'Otomatis, bukan manual, dengan waktu mengikuti kecepatan server.','failed'=>'Jika saldo terpotong tetapi pembayaran gagal, dana otomatis kembali ke rekening pengirim dalam 1-2 hari kerja dan pesanan berubah gagal. Pengguna juga dapat membuat laporan.','proof'=>'Bukti pembayaran tidak perlu dikirim kecuali saat membuat laporan. Salah nominal akan dikembalikan otomatis.'],
     'warranty'=>['duration'=>'Ikuti durasi yang tertulis pada produk atau deskripsinya. Jika tidak ada durasi khusus, garansi berlaku penuh selama masa aktif.','solution'=>'Akun yang deactivated dan memenuhi syarat diganti akun baru tanpa batas jumlah penggantian selama masa garansi.','claim'=>'Siapkan screenshot bukti kendala; admin memeriksa akun langsung. Proses umumnya secepat pembuatan akun. Pengguna tetap dibantu meski kendala disebabkan pengguna, sedangkan syarat akhir mengikuti deskripsi dan dokumentasi produk.'],
     'api_llm'=>['unit'=>'Kuota token','price'=>'Rp28.500 per 1 juta token','models'=>'Lebih dari 100 model tersedia melalui satu API key. Daftar aktual mengikuti halaman API LLM.','expiry'=>'Kuota token tidak kedaluwarsa.'],
+    'product_notes'=>['meitu_premium'=>'Meitu Premium adalah aplikasi edit foto dan video untuk selfie, konten sosial media, katalog online shop, dan editing cepat dari HP. Fitur utama: photo editor, video editor, filter, template, retouch wajah, beautify, makeup, body shape, collage, sticker, text, frame, AI object remover, AI art/effects, dan material VIP seperti efek, filter, AR camera, makeup, serta template eksklusif. Di WorkDigie produk ini akun private, bukan sharing, full garansi selama masa aktif, varian 1 bulan Rp38.000 dan 2 bulan Rp59.000.'],
     'operations'=>['hours'=>'Tim operasional melayani setiap hari pukul 06.00-22.00 WIB; sistem otomatis tetap berjalan 24 jam.','image'=>'Lampiran gambar langsung diteruskan ke tim operasional.'],
     'vouchers'=>array_values(array_map(fn($v)=>['code'=>$v['code']??'','description'=>$v['description']??'','type'=>$v['type']??'','value'=>(int)($v['value']??0),'minimum'=>(int)($v['minSubtotal']??0)],array_filter($store['vouchers'],fn($v)=>!empty($v['enabled'])))),
     'catalog'=>$catalog,
