@@ -18,7 +18,7 @@ set_exception_handler(function(Throwable $e): void { emergency_json_error('Terja
 register_shutdown_function(function(): void { $error=error_get_last(); if(!$error||!in_array($error['type']??0,[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR],true)) return; emergency_json_error('Terjadi kesalahan fatal server. Coba ulangi sebentar lagi.',($error['message']??'').' in '.($error['file']??'').':'.($error['line']??'')); });
 $requestPathForHeaders=parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 if(str_starts_with($requestPathForHeaders,'/api/')){ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0'); header('Pragma: no-cache'); header('X-Robots-Tag: noindex, nofollow, noarchive'); }
-const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=27;const ORDER_RESERVATION_MS=1800000;
+const LEGACY_STORE_FILE=__DIR__.'/data/store.json';const SEED_FILE=__DIR__.'/seed-store.json';const ENV_FILE=__DIR__.'/.env';const STORE_SCHEMA_VERSION=28;const ORDER_RESERVATION_MS=1800000;
 define('RUNTIME_DATA_DIR',dirname(__DIR__).'/.workdigie-data');
 define('STORE_FILE',RUNTIME_DATA_DIR.'/store.json');
 define('STORE_BACKUP_FILE',RUNTIME_DATA_DIR.'/store.backup.json');
@@ -119,12 +119,12 @@ function ensure_store_defaults(array &$data): void {
     }
     unset($order);
   }
-  if($schema<27 || $productsWereEmpty){
+  if($schema<28 || $productsWereEmpty){
     $meituIcon='https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/94/8c/2f/948c2f51-68e3-f083-e97e-41ad21f4685d/AppIcon-0-0-1x_U007emarketing-0-9-0-85-220.png/512x512bb.jpg';
     $meituProduct=[
       'id'=>94000,
       'is_best_seller'=>false,
-      'title'=>'MEITU PREMIUM',
+      'title'=>'MEITU PREMIUM VIP+',
       'cashback_amount'=>0,
       'cashback_type'=>'amount',
       'thumbnail'=>$meituIcon,
@@ -139,11 +139,11 @@ function ensure_store_defaults(array &$data): void {
       'autoRestockThreshold'=>1,
       'featuredRank'=>7,
       'category'=>'Aplikasi',
-      'access'=>'Akun private Meitu Premium',
+      'access'=>'Akun private Meitu Premium VIP+ untuk iOS/Android',
       'duration'=>'1 bulan',
       'warranty'=>'Full garansi',
-      'badges'=>['Private','Full Garansi','Edit Foto & Video'],
-      'description'=>'Meitu Premium adalah aplikasi edit foto dan video untuk kebutuhan selfie, konten sosial media, katalog online shop, dan editing cepat dari HP. Fiturnya mencakup photo editor, video editor, filter, template, retouch wajah, beautify, makeup, body shape, collage, sticker, text, frame, remover objek berbasis AI, AI art/effects, dan material VIP seperti filter, efek, AR camera, makeup, serta template eksklusif. Produk WorkDigie ini akun private, bukan sharing, dengan full garansi selama masa aktif. Varian tersedia 1 bulan Rp38.000 dan 2 bulan Rp59.000.',
+      'badges'=>['VIP+','Private','Full Garansi','iOS/Android'],
+      'description'=>'Meitu Premium VIP+ adalah plan VIP+ untuk aplikasi edit foto dan video Meitu di iOS maupun Android. Cocok untuk selfie, konten sosial media, katalog online shop, dan editing cepat dari HP. Fiturnya mencakup photo editor, video editor, filter, template, retouch wajah, beautify, makeup, body shape, collage, sticker, text, frame, remover objek berbasis AI, AI art/effects, dan material VIP+ seperti filter, efek, AR camera, makeup, serta template eksklusif. Produk WorkDigie ini akun private, bukan sharing, dengan full garansi selama masa aktif. Varian yang dijual hanya sesuai yang tertera: 1 bulan Rp38.000 dan 2 bulan Rp59.000. Tidak ada versi seminggu, trial, harian, atau durasi lain.',
       'variants'=>[
         ['id'=>'1m','label'=>'1 Bulan','price'=>38000,'duration'=>'1 bulan','warranty'=>'Full garansi'],
         ['id'=>'2m','label'=>'2 Bulan','price'=>59000,'duration'=>'2 bulan','warranty'=>'Full garansi']
@@ -425,6 +425,8 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
     }
     usort($matches,fn($a,$b)=>$b['score']<=>$a['score']);
     if($matches){
+      $topProduct=$matches[0]['product'];
+      if(preg_match('/\bmeitu\b/iu',(string)($topProduct['title']??''))&&preg_match('/seminggu|mingguan|minggu|7\s*hari|harian|trial|coba|lain/iu',$queryText)) json_response(['answer'=>'Meitu Premium VIP+ cuma tersedia varian 1 Bulan Rp38.000 dan 2 Bulan Rp59.000 ya kak. Tidak ada versi seminggu, trial, harian, atau durasi lain.','escalate'=>false,'reason'=>'local_catalog_variant_limit'],200);
       $lines=[]; foreach(array_slice($matches,0,5) as $match){ $p=$match['product']; $stock=product_stock($p); $price=(int)($p['price']??product_base_price($p)); $variantText=''; $variants=is_array($p['variants']??null)?$p['variants']:[]; if($variants&&(count($matches)===1||preg_match('/varian|durasi|\b[0-9]+\s*(bulan|bln|tahun|thn)\b/iu',$queryText))){$variantParts=[]; foreach(array_slice($variants,0,4) as $variant){$label=trim((string)($variant['label']??$variant['name']??'')); $variantPrice=(int)($variant['price']??0); if($label!==''&&$variantPrice>0)$variantParts[]=$label.' '.rupiah_text($variantPrice);} if($variantParts)$variantText=' • varian: '.implode(', ',$variantParts);} $lines[]=($p['title']??'Produk').' '.rupiah_text($price).$variantText.' • stok '.$stock; }
       $suffix=count($matches)>5?' Ada '.count($matches).' produk terkait, Fenita tampilkan yang paling dekat dulu ya.':'';
       json_response(['answer'=>implode("\n",$lines).$suffix,'escalate'=>false,'reason'=>'local_catalog'],200);
@@ -441,7 +443,7 @@ if ($path === '/api/ai/chat' && $method === 'POST') {
     'payment'=>['qris'=>'QRIS selalu aktif dan wajib dibayar sesuai nominal tagihan.','other'=>'Indomaret, virtual account, dan e-wallet bergantung pada kondisi server.','verification'=>'Otomatis, bukan manual, dengan waktu mengikuti kecepatan server.','failed'=>'Jika saldo terpotong tetapi pembayaran gagal, dana otomatis kembali ke rekening pengirim dalam 1-2 hari kerja dan pesanan berubah gagal. Pengguna juga dapat membuat laporan.','proof'=>'Bukti pembayaran tidak perlu dikirim kecuali saat membuat laporan. Salah nominal akan dikembalikan otomatis.'],
     'warranty'=>['duration'=>'Ikuti durasi yang tertulis pada produk atau deskripsinya. Jika tidak ada durasi khusus, garansi berlaku penuh selama masa aktif.','solution'=>'Akun yang deactivated dan memenuhi syarat diganti akun baru tanpa batas jumlah penggantian selama masa garansi.','claim'=>'Siapkan screenshot bukti kendala; admin memeriksa akun langsung. Proses umumnya secepat pembuatan akun. Pengguna tetap dibantu meski kendala disebabkan pengguna, sedangkan syarat akhir mengikuti deskripsi dan dokumentasi produk.'],
     'api_llm'=>['unit'=>'Kuota token','price'=>'Rp28.500 per 1 juta token','models'=>'Lebih dari 100 model tersedia melalui satu API key. Daftar aktual mengikuti halaman API LLM.','expiry'=>'Kuota token tidak kedaluwarsa.'],
-    'product_notes'=>['meitu_premium'=>'Meitu Premium adalah aplikasi edit foto dan video untuk selfie, konten sosial media, katalog online shop, dan editing cepat dari HP. Fitur utama: photo editor, video editor, filter, template, retouch wajah, beautify, makeup, body shape, collage, sticker, text, frame, AI object remover, AI art/effects, dan material VIP seperti efek, filter, AR camera, makeup, serta template eksklusif. Di WorkDigie produk ini akun private, bukan sharing, full garansi selama masa aktif, varian 1 bulan Rp38.000 dan 2 bulan Rp59.000.'],
+    'product_notes'=>['meitu_premium'=>'Meitu Premium yang dijual WorkDigie adalah plan VIP+ untuk aplikasi Meitu di iOS maupun Android, bukan VIP biasa. Meitu dipakai untuk edit foto dan video: selfie, konten sosial media, katalog online shop, dan editing cepat dari HP. Fitur utama: photo editor, video editor, filter, template, retouch wajah, beautify, makeup, body shape, collage, sticker, text, frame, AI object remover, AI art/effects, dan material VIP+ seperti efek, filter, AR camera, makeup, serta template eksklusif. Produk ini akun private, bukan sharing, full garansi selama masa aktif. Varian yang dijual hanya 1 bulan Rp38.000 dan 2 bulan Rp59.000; tidak menjual versi seminggu, trial, harian, atau durasi lain.'],
     'operations'=>['hours'=>'Tim operasional melayani setiap hari pukul 06.00-22.00 WIB; sistem otomatis tetap berjalan 24 jam.','image'=>'Lampiran gambar langsung diteruskan ke tim operasional.'],
     'vouchers'=>array_values(array_map(fn($v)=>['code'=>$v['code']??'','description'=>$v['description']??'','type'=>$v['type']??'','value'=>(int)($v['value']??0),'minimum'=>(int)($v['minSubtotal']??0)],array_filter($store['vouchers'],fn($v)=>!empty($v['enabled'])))),
     'catalog'=>$catalog,
